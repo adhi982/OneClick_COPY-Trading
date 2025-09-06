@@ -12,10 +12,13 @@ export const metadata: Metadata = {
   description: "Sign in to your copy trading account",
 }
 
+import { AuthHeader } from "@/components/auth/AuthHeader"
+
 export default function SignInPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <AuthHeader />
+      <Card className="w-full max-w-md bg-card/95 backdrop-blur-sm">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Welcome Back</CardTitle>
           <CardDescription className="text-center">Sign in to your copy trading account</CardDescription>

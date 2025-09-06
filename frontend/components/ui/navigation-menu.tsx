@@ -2,6 +2,8 @@ import * as React from "react"
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu"
 import { cva } from "class-variance-authority"
 import { ChevronDownIcon } from "lucide-react"
+import { Menu, MenuItem, MenuButton } from "@headlessui/react"
+import { UserIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -18,12 +20,13 @@ function NavigationMenu({
       data-slot="navigation-menu"
       data-viewport={viewport}
       className={cn(
-        "group/navigation-menu relative flex max-w-max flex-1 items-center justify-center",
+        "group/navigation-menu relative flex max-w-max flex-1 items-center justify-between",
         className
       )}
       {...props}
     >
       {children}
+      <ProfileDropdown />
       {viewport && <NavigationMenuViewport />}
     </NavigationMenuPrimitive.Root>
   )
@@ -155,6 +158,30 @@ function NavigationMenuIndicator({
   )
 }
 
+function ProfileDropdown() {
+  return (
+    <div className="relative group">
+      <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 hover:bg-gray-300 cursor-pointer">
+        <UserIcon className="w-6 h-6 text-gray-600" />
+      </div>
+      <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+        <a href="/settings" className="block px-4 py-2 text-sm hover:bg-gray-100">
+          Settings
+        </a>
+        <a href="/profile" className="block px-4 py-2 text-sm hover:bg-gray-100">
+          Profile
+        </a>
+        <button
+          onClick={() => alert("Logged out")}
+          className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-100"
+        >
+          Logout
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export {
   NavigationMenu,
   NavigationMenuList,
@@ -165,4 +192,5 @@ export {
   NavigationMenuIndicator,
   NavigationMenuViewport,
   navigationMenuTriggerStyle,
+  ProfileDropdown,
 }

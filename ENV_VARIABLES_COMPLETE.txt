@@ -1,0 +1,329 @@
+# ================================================
+# ONECLICK COPY TRADING PLATFORM - ENVIRONMENT VARIABLES
+# ================================================
+# Instructions: Copy this file to .env and fill in your actual values
+# Never commit the .env file to version control
+
+# ================================================
+# APPLICATION CONFIGURATION
+# ================================================
+NODE_ENV=development
+PORT=3001
+API_VERSION=v1
+APP_NAME="OneClick Copy Trading"
+APP_URL=http://localhost:3000
+API_URL=http://localhost:3001
+
+# ================================================
+# SUPABASE CONFIGURATION (Primary Database)
+# ================================================
+# Get these from: https://supabase.com/dashboard -> Your Project -> Settings -> API
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+SUPABASE_JWT_SECRET=your-jwt-secret-here
+
+# Supabase Database URL (for direct connections if needed)
+SUPABASE_DB_URL=postgresql://postgres:your-password@db.your-project-id.supabase.co:5432/postgres
+
+# ================================================
+# FIREBASE AUTHENTICATION
+# ================================================
+# Get these from: https://console.firebase.google.com -> Project Settings -> Service Accounts
+NEXT_PUBLIC_FIREBASE_API_KEY=your-firebase-api-key
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your-project-id.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=your-project-id
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your-project-id.appspot.com
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your-sender-id
+NEXT_PUBLIC_FIREBASE_APP_ID=your-app-id
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=your-measurement-id
+
+# Firebase Admin SDK (Server-side only)
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYour private key here\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project-id.iam.gserviceaccount.com
+FIREBASE_PROJECT_ID=your-project-id
+
+# ================================================
+# REDIS CONFIGURATION (Caching)
+# ================================================
+# For local development, use Redis Docker or local installation
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=your-redis-password
+REDIS_DB=0
+
+# For production, use Redis Cloud or similar service
+# REDIS_URL=redis://:password@hostname:port
+
+# ================================================
+# APTOS BLOCKCHAIN CONFIGURATION
+# ================================================
+# Aptos Network Configuration
+APTOS_NETWORK=devnet
+APTOS_NODE_URL=https://fullnode.devnet.aptoslabs.com/v1
+APTOS_FAUCET_URL=https://faucet.devnet.aptoslabs.com
+
+# Smart Contract Addresses (Deploy your contracts and update these)
+APTOS_COPY_TRADING_MODULE_ADDRESS=0x1
+APTOS_USER_VAULT_MODULE_ADDRESS=0x1
+APTOS_TRADER_REGISTRY_MODULE_ADDRESS=0x1
+
+# Aptos Private Keys (For server-side operations)
+APTOS_PRIVATE_KEY=0x1234567890abcdef... # Your private key for contract interactions
+APTOS_PUBLIC_KEY=0x1234567890abcdef... # Corresponding public key
+
+# ================================================
+# CRYPTOCURRENCY MARKET DATA APIs
+# ================================================
+
+# CoinGecko API (Free tier: 50 requests/minute)
+COINGECKO_API_KEY=your-coingecko-api-key
+COINGECKO_BASE_URL=https://api.coingecko.com/api/v3
+
+# CoinAPI.io (Professional crypto data)
+COINAPI_KEY=your-coinapi-key
+COINAPI_BASE_URL=https://rest.coinapi.io/v1
+
+# Binance API (For direct exchange data)
+BINANCE_API_KEY=your-binance-api-key
+BINANCE_SECRET_KEY=your-binance-secret-key
+BINANCE_BASE_URL=https://api.binance.com
+
+# Alpha Vantage (Technical indicators)
+ALPHA_VANTAGE_API_KEY=your-alpha-vantage-key
+ALPHA_VANTAGE_BASE_URL=https://www.alphavantage.co/query
+
+# ================================================
+# PAYMENT PROCESSING
+# ================================================
+
+# Stripe (Credit/Debit Card Processing)
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_your-stripe-publishable-key
+STRIPE_SECRET_KEY=sk_test_your-stripe-secret-key
+STRIPE_WEBHOOK_SECRET=whsec_your-webhook-secret
+
+# PayPal
+PAYPAL_CLIENT_ID=your-paypal-client-id
+PAYPAL_CLIENT_SECRET=your-paypal-client-secret
+PAYPAL_MODE=sandbox # or 'live' for production
+
+# Crypto Payment Gateway (e.g., CoinPayments)
+COINPAYMENTS_PUBLIC_KEY=your-coinpayments-public-key
+COINPAYMENTS_PRIVATE_KEY=your-coinpayments-private-key
+COINPAYMENTS_MERCHANT_ID=your-merchant-id
+
+# ================================================
+# COMMUNICATION SERVICES
+# ================================================
+
+# SendGrid (Email Service)
+SENDGRID_API_KEY=SG.your-sendgrid-api-key
+SENDGRID_FROM_EMAIL=noreply@yourapp.com
+SENDGRID_FROM_NAME="OneClick Trading"
+
+# Twilio (SMS Service)
+TWILIO_ACCOUNT_SID=your-twilio-account-sid
+TWILIO_AUTH_TOKEN=your-twilio-auth-token
+TWILIO_PHONE_NUMBER=+1234567890
+
+# Firebase Cloud Messaging (Push Notifications)
+FCM_SERVER_KEY=your-fcm-server-key
+
+# ================================================
+# NEWS & SENTIMENT ANALYSIS
+# ================================================
+
+# NewsAPI (Financial News)
+NEWS_API_KEY=your-newsapi-key
+
+# CryptoPanic API (Crypto News)
+CRYPTOPANIC_API_KEY=your-cryptopanic-api-key
+
+# Twitter API v2 (Social Sentiment)
+TWITTER_BEARER_TOKEN=your-twitter-bearer-token
+TWITTER_API_KEY=your-twitter-api-key
+TWITTER_API_SECRET=your-twitter-api-secret
+
+# ================================================
+# AI & MACHINE LEARNING
+# ================================================
+
+# OpenAI API (GPT Models)
+OPENAI_API_KEY=sk-your-openai-api-key
+OPENAI_ORGANIZATION=your-org-id
+
+# Hugging Face (Pre-trained ML Models)
+HUGGINGFACE_API_KEY=your-huggingface-api-key
+
+# Google Cloud AI (Optional)
+GOOGLE_CLOUD_PROJECT_ID=your-gcp-project-id
+GOOGLE_APPLICATION_CREDENTIALS=path/to/your/service-account.json
+
+# ================================================
+# SECURITY & MONITORING
+# ================================================
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_EXPIRES_IN=7d
+JWT_REFRESH_EXPIRES_IN=30d
+
+# API Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000 # 15 minutes
+RATE_LIMIT_MAX_REQUESTS=100
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000,https://yourapp.com
+CORS_CREDENTIALS=true
+
+# Security Headers
+HELMET_ENABLED=true
+BCRYPT_ROUNDS=12
+
+# Sentry (Error Tracking)
+NEXT_PUBLIC_SENTRY_DSN=your-sentry-dsn
+SENTRY_AUTH_TOKEN=your-sentry-auth-token
+
+# ================================================
+# FILE STORAGE
+# ================================================
+
+# AWS S3 (File Storage)
+AWS_ACCESS_KEY_ID=your-aws-access-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret-key
+AWS_REGION=us-east-1
+AWS_S3_BUCKET=your-s3-bucket-name
+
+# Cloudinary (Image/Video Management)
+CLOUDINARY_CLOUD_NAME=your-cloudinary-cloud-name
+CLOUDINARY_API_KEY=your-cloudinary-api-key
+CLOUDINARY_API_SECRET=your-cloudinary-api-secret
+
+# ================================================
+# ANALYTICS & MONITORING
+# ================================================
+
+# Google Analytics
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+
+# Mixpanel (Event Analytics)
+NEXT_PUBLIC_MIXPANEL_TOKEN=your-mixpanel-token
+
+# LogRocket (Session Recording)
+NEXT_PUBLIC_LOGROCKET_APP_ID=your-logrocket-app-id
+
+# ================================================
+# DEVELOPMENT & TESTING
+# ================================================
+
+# Database URLs for Testing
+TEST_DATABASE_URL=postgresql://test_user:test_password@localhost:5432/test_db
+TEST_REDIS_URL=redis://localhost:6379/1
+
+# Mock API Keys for Development
+MOCK_PAYMENT_ENABLED=true
+MOCK_TRADING_ENABLED=true
+MOCK_NOTIFICATIONS_ENABLED=false
+
+# Debug Settings
+DEBUG_SQL=false
+DEBUG_REDIS=false
+DEBUG_API_CALLS=false
+LOG_LEVEL=info # debug, info, warn, error
+
+# ================================================
+# PRODUCTION SPECIFIC (Uncomment for production)
+# ================================================
+
+# Production Security
+# FORCE_HTTPS=true
+# SECURE_COOKIES=true
+# SAME_SITE_COOKIES=strict
+
+# Production Database (Use connection pooling)
+# DATABASE_POOL_MIN=2
+# DATABASE_POOL_MAX=20
+# DATABASE_IDLE_TIMEOUT=30000
+
+# Production Redis (Use cluster mode)
+# REDIS_CLUSTER_ENABLED=true
+# REDIS_CLUSTER_NODES=redis-1:6379,redis-2:6379,redis-3:6379
+
+# CDN Configuration
+# CDN_URL=https://cdn.yourapp.com
+# STATIC_FILES_URL=https://static.yourapp.com
+
+# ================================================
+# WEBHOOK URLS (For external services)
+# ================================================
+
+# Payment Webhooks
+STRIPE_WEBHOOK_URL=/api/webhooks/stripe
+PAYPAL_WEBHOOK_URL=/api/webhooks/paypal
+COINPAYMENTS_WEBHOOK_URL=/api/webhooks/coinpayments
+
+# Exchange Webhooks (if supported)
+BINANCE_WEBHOOK_URL=/api/webhooks/binance
+
+# ================================================
+# FEATURE FLAGS
+# ================================================
+
+# Enable/Disable Features
+FEATURE_SOCIAL_TRADING=true
+FEATURE_PREMIUM_CHANNELS=true
+FEATURE_AI_INSIGHTS=true
+FEATURE_CRYPTO_PAYMENTS=true
+FEATURE_MOBILE_APP=false
+FEATURE_ADVANCED_CHARTS=true
+FEATURE_PAPER_TRADING=true
+
+# ================================================
+# ENVIRONMENT SPECIFIC OVERRIDES
+# ================================================
+
+# Development specific
+NEXT_TELEMETRY_DISABLED=1
+VERCEL_ENV=development
+
+# Production specific (uncomment for production)
+# NEXT_TELEMETRY_DISABLED=0
+# VERCEL_ENV=production
+
+# ================================================
+# NOTES & INSTRUCTIONS
+# ================================================
+
+# 1. SUPABASE SETUP:
+#    - Create project at https://supabase.com
+#    - Go to Settings > API to get your keys
+#    - Enable Row Level Security (RLS) on all tables
+#    - Run the SQL from the database file to create tables
+
+# 2. FIREBASE SETUP:
+#    - Create project at https://console.firebase.google.com
+#    - Enable Authentication with Email/Password and Google providers
+#    - Generate service account key for server-side operations
+
+# 3. REDIS SETUP:
+#    - For development: Use Docker -> docker run -d -p 6379:6379 redis:alpine
+#    - For production: Use Redis Cloud or AWS ElastiCache
+
+# 4. PAYMENT SETUP:
+#    - Stripe: Enable test mode first, then switch to live mode
+#    - Configure webhooks for subscription lifecycle events
+
+# 5. SECURITY REMINDERS:
+#    - Never commit .env files to version control
+#    - Use different secrets for development and production
+#    - Rotate API keys regularly
+#    - Use environment-specific configurations
+
+# 6. TESTING:
+#    - All test keys should be prefixed with 'test_' or use sandbox endpoints
+#    - Mock external APIs during development to avoid rate limits
+
+# 7. DEPLOYMENT:
+#    - Use Vercel for frontend deployment
+#    - Use Railway/Render/AWS for backend deployment
+#    - Configure environment variables in your hosting platform

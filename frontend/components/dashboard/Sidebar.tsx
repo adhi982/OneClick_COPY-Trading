@@ -7,18 +7,15 @@ import {
   TrendingUp,
   Users,
   BarChart3,
-  Settings,
   X,
   Wallet,
-  Activity,
   MessageSquare,
   Crown,
-  Radio,
-  Bell,
-  User,
+  Radio
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { motion } from "framer-motion"
 
 interface SidebarProps {
   isOpen: boolean
@@ -33,31 +30,44 @@ const navigation = [
   { name: "Analytics", href: "/analytics", icon: BarChart3 },
   { name: "Community", href: "/community", icon: MessageSquare },
   { name: "My Channels", href: "/community/my-channels", icon: Radio },
-  { name: "Subscriptions", href: "/subscriptions", icon: Crown },
-  { name: "Activity", href: "/activity", icon: Activity },
-  { name: "Profile", href: "/profile", icon: User },
-  { name: "Notifications", href: "/notifications", icon: Bell },
-  { name: "Settings", href: "/settings", icon: Settings },
+  { name: "Subscriptions", href: "/subscriptions", icon: Crown }
 ]
 
 export function Sidebar({ isOpen, onClose }: SidebarProps) {
   const pathname = usePathname()
+  const isDashboard = pathname?.startsWith("/dashboard")
 
   return (
     <>
-      {/* Mobile overlay */}
-      {isOpen && <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={onClose} />}
+      {/* Mobile overlay for non-dashboard pages */}
+      {!isDashboard && isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm lg:hidden"
+          onClick={onClose}
+        />
+      )}
 
       {/* Sidebar */}
-      <div
+      <motion.div
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-card border-r border-border transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
-          isOpen ? "translate-x-0" : "-translate-x-full",
+          "bg-card border-r border-border overflow-hidden",
+          isDashboard 
+            ? "w-64 static" // Static sidebar for dashboard
+            : cn(
+                "fixed inset-y-0 left-0 z-50", // Animated sidebar for other pages
+                isOpen ? "w-64" : "w-0"
+              )
         )}
+        initial={false}
+        animate={isDashboard ? { width: "256px" } : { width: isOpen ? "256px" : "0px" }}
+        transition={{
+          duration: 0.2,
+          ease: "easeInOut",
+        }}
       >
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-lg font-semibold text-foreground">OneClick</h2>
-          <Button variant="ghost" size="sm" onClick={onClose} className="lg:hidden">
+          <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-5 w-5" />
           </Button>
         </div>
@@ -79,13 +89,13 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
                   onClick={onClose}
                 >
                   <item.icon className="mr-3 h-5 w-5" />
-                  {item.name}
+                  <span>{item.name}</span>
                 </Link>
               )
             })}
           </div>
         </nav>
-      </div>
+      </motion.div>
     </>
   )
 }

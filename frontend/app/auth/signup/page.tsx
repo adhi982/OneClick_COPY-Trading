@@ -13,10 +13,13 @@ export const metadata: Metadata = {
   description: "Create your copy trading account",
 }
 
+import { AuthHeader } from "@/components/auth/AuthHeader"
+
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black p-4">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <AuthHeader />
+      <Card className="w-full max-w-md bg-card/95 backdrop-blur-sm">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
           <CardDescription className="text-center">Join thousands of successful copy traders</CardDescription>
