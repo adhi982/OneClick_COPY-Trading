@@ -161,19 +161,19 @@ This document outlines the comprehensive risk management system for the OneClick
 **Market Condition Alerts**: Warnings during unusual market conditions
 **System Status Alerts**: Notifications about platform operational issues
 
-### Predictive Risk Analytics
+### Simplified Risk Analytics
 
-#### Machine Learning Risk Models
-**Pattern Recognition**: Identify risky trading patterns before they cause losses
-**Anomaly Detection**: Detect unusual trading behavior that might indicate problems
-**Predictive Modeling**: Forecast potential risks based on current positions
-**Adaptive Learning**: Continuously improve risk models based on outcomes
+#### Statistical Risk Analysis
+**Pattern Recognition**: Identify risky trading patterns using statistical analysis
+**Anomaly Detection**: Detect unusual trading behavior using simple threshold rules
+**Historical Analysis**: Analyze past performance to identify risk factors
+**Trend Analysis**: Use moving averages and momentum indicators for risk assessment
 
-#### Stress Testing
+#### Basic Stress Testing
 **Scenario Analysis**: Test portfolio performance under various market scenarios
 **Historical Stress Tests**: Analyze how current positions would have performed historically
-**Monte Carlo Simulations**: Statistical analysis of potential outcomes
-**Correlation Stress Tests**: Test portfolio under various correlation scenarios
+**Simple Simulations**: Basic statistical analysis of potential outcomes
+**Correlation Analysis**: Test portfolio under various correlation scenarios using historical data
 
 ## Emergency Risk Protocols
 
@@ -246,13 +246,13 @@ This document outlines the comprehensive risk management system for the OneClick
 **Monitoring Systems**: Basic real-time risk monitoring
 
 #### Phase 2 - Advanced Features
-**Portfolio Risk Analytics**: Comprehensive portfolio risk analysis
-**Predictive Models**: Machine learning-based risk prediction
+**Portfolio Risk Analytics**: Comprehensive portfolio risk analysis using statistical methods
+**Enhanced Calculations**: Advanced statistical risk metrics and calculations
 **Advanced Alerts**: Sophisticated alerting and notification systems
-**Stress Testing**: Portfolio stress testing capabilities
+**Stress Testing**: Portfolio stress testing using historical data
 
 #### Phase 3 - Optimization
-**AI-Driven Risk Management**: Advanced AI for risk prediction and management
+**Sentiment Integration**: DistilBERT-powered risk sentiment analysis
 **Dynamic Risk Adjustment**: Automatic risk adjustment based on market conditions
 **Social Risk Features**: Community-based risk insights and recommendations
 **Regulatory Enhancement**: Advanced compliance and reporting features
@@ -267,7 +267,7 @@ This document outlines the comprehensive risk management system for the OneClick
 
 #### Real-Time Processing
 **Low-Latency Monitoring**: Sub-second risk monitoring and response
-**Streaming Analytics**: Real-time processing of risk metrics
+**Streaming Analytics**: Real-time processing of risk metrics using coinapi.io data
 **Event-Driven Architecture**: Immediate response to risk events
 **Scalable Infrastructure**: Architecture that scales with user growth
 

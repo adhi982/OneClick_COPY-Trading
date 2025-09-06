@@ -1,0 +1,219 @@
+# Simplified Backend Plan - OneClick Copy Trading Platform
+*Clean, Connected Architecture with 3 Core Components*
+
+## Overview
+Simple backend architecture with 3 main components that work together seamlessly:
+1. **Backend Main** - API server and business logic
+2. **Database** - Data storage and management  
+3. **Smart Contracts** - Blockchain logic on Aptos
+
+---
+
+## 1. Backend Main (Node.js + Express)
+
+### Purpose
+Central API server that handles all business logic and connects frontend to database and blockchain.
+
+### Core Responsibilities
+- **API Endpoints**: Serve data to frontend
+- **Real-time Data**: Get market data from coinapi.io
+- **User Management**: Handle user accounts and authentication
+- **Trading Logic**: Process copy trading operations
+- **Risk Management**: Enforce user limits and safety rules
+- **Sentiment Analysis**: Use DistilBERT for text analysis
+
+### Folder Structure
+```
+backend/
+├── src/
+│   ├── controllers/        # Handle API requests
+│   │   ├── auth.controller.js
+│   │   ├── traders.controller.js
+│   │   ├── portfolio.controller.js
+│   │   ├── market.controller.js
+│   │   └── community.controller.js
+│   ├── services/          # Business logic
+│   │   ├── aptos.service.js
+│   │   ├── market.service.js
+│   │   ├── trading.service.js
+│   │   ├── risk.service.js
+│   │   └── sentiment.service.js
+│   ├── models/            # Database models
+│   │   ├── User.js
+│   │   ├── Trader.js
+│   │   ├── Trade.js
+│   │   ├── Portfolio.js
+│   │   └── CopySettings.js
+│   ├── routes/            # API routes
+│   │   ├── auth.routes.js
+│   │   ├── traders.routes.js
+│   │   ├── portfolio.routes.js
+│   │   ├── market.routes.js
+│   │   └── community.routes.js
+│   ├── middleware/        # Auth, validation, etc.
+│   │   ├── auth.middleware.js
+│   │   ├── validation.middleware.js
+│   │   └── rateLimit.middleware.js
+│   ├── utils/             # Helper functions
+│   │   ├── coinapi.js
+│   │   ├── distilbert.js
+│   │   └── calculations.js
+│   └── app.js             # Main server file
+├── package.json
+└── .env
+```
+
+### Key API Endpoints
+```javascript
+// Authentication
+POST /api/auth/login
+POST /api/auth/logout
+GET /api/auth/profile
+
+// Traders
+GET /api/traders              // Get all traders
+GET /api/traders/:id          // Get specific trader
+POST /api/traders/follow      // Follow a trader
+POST /api/traders/unfollow    // Unfollow a trader
+
+// Portfolio
+GET /api/portfolio            // Get user portfolio
+GET /api/portfolio/positions  // Get active positions
+GET /api/portfolio/history    // Get trade history
+
+// Market Data
+GET /api/market/prices        // Get current prices
+GET /api/market/charts/:symbol // Get chart data
+GET /api/market/sentiment     // Get market sentiment
+
+// Community
+GET /api/community/leaderboard
+GET /api/community/feed
+POST /api/community/posts
+```
+
+### External Integrations
+- **coinapi.io**: Real-time market data
+- **DistilBERT**: Sentiment analysis
+- **Aptos SDK**: Blockchain interactions
+- **PostgreSQL**: Database queries
+- **Redis**: Caching
+
+---
+
+
+## How Everything Connects
+
+### Data Flow
+```
+Frontend Request → Backend API → Database Query → Response
+                                ↓
+                            Smart Contract (if blockchain action needed)
+                                ↓
+                            Update Database → Return to Frontend
+```
+
+### Example: Following a Trader
+1. **Frontend** sends POST to `/api/traders/follow`
+2. **Backend** validates request and checks risk limits
+3. **Database** stores copy settings
+4. **Smart Contract** creates on-chain copy relationship
+5. **Backend** updates database with transaction hash
+6. **Frontend** receives success response
+
+### Example: Real-time Market Data
+1. **Backend** fetches data from coinapi.io every 2 seconds
+2. **Redis** caches the data for fast access
+3. **Frontend** requests data via `/api/market/prices`
+4. **Backend** returns cached data instantly
+5. **WebSocket** pushes updates to connected clients
+
+### Example: Sentiment Analysis
+1. **Backend** collects news/social media text
+2. **DistilBERT** analyzes sentiment scores
+3. **Database** stores sentiment data
+4. **Frontend** displays sentiment indicators
+5. **Trading decisions** factor in sentiment scores
+
+---
+
+## Environment Setup
+
+### Backend Environment Variables
+```bash
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=copy_trading
+DB_USER=postgres
+DB_PASSWORD=your_password
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+# External APIs
+COINAPI_KEY=your_coinapi_key
+HUGGINGFACE_TOKEN=your_hf_token
+
+# Aptos
+APTOS_NETWORK=mainnet
+PRIVATE_KEY=your_private_key
+
+# Server
+PORT=3001
+JWT_SECRET=your_jwt_secret
+```
+
+### Package.json
+```json
+{
+  "name": "copy-trading-backend",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "jest"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "pg": "^8.8.0",
+    "redis": "^4.0.0",
+    "aptos": "^1.8.0",
+    "axios": "^1.6.0",
+    "@huggingface/inference": "^2.6.0",
+    "jsonwebtoken": "^9.0.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.7.0"
+  }
+}
+```
+
+---
+
+## Deployment
+
+### Backend Deployment (Vercel/Railway)
+```yaml
+# railway.toml
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 100
+restartPolicyType = "ON_FAILURE"
+```
+
+### Database Deployment (Supabase/Neon)
+- PostgreSQL: Use managed service like Supabase or Neon
+- Redis: Use Upstash or Redis Cloud
+
+### Smart Contracts (Aptos Mainnet)
+```bash
+# Deploy to Aptos
+aptos move publish --named-addresses copy_trading=your_address
+```
+
+This simplified architecture is much cleaner and easier to understand while maintaining all the core functionality needed for your copy trading platform!
