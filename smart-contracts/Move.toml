@@ -1,0 +1,11 @@
+[package]
+name = "oneclick_copy_trading"
+version = "1.0.0"
+upgrade_policy = "compatible"
+
+[addresses]
+oneclick_copy_trading = "_"
+
+[dev-addresses]
+
+[dev-dependencies]

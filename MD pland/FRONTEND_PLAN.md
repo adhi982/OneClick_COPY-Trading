@@ -853,147 +853,729 @@ export const usePolling = <T>(
 
 ---
 
-## Code Examples
+## Complete Page-by-Page Frontend Specifications
 
-### Main Dashboard Page
-```typescript
-// app/dashboard/page.tsx
-export default function Dashboard() {
-  const { user } = useAppStore();
-  const { portfolio } = usePortfolio();
-  const { traders } = useTraders();
+### 1. Landing Page (`/`)
+**Purpose**: First impression, user acquisition, and wallet connection
 
-  if (!user) {
-    return <LoginPrompt />;
-  }
-
-  return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        {/* Header Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <StatsCard
-            title="Total Value"
-            value={`$${portfolio?.totalValue.toLocaleString()}`}
-            change={portfolio?.dayChange}
-            icon={<DollarSign className="h-6 w-6" />}
-          />
-          <StatsCard
-            title="Active Positions"
-            value={portfolio?.activePositions.toString()}
-            icon={<TrendingUp className="h-6 w-6" />}
-          />
-          <StatsCard
-            title="Following"
-            value={portfolio?.followingCount.toString()}
-            icon={<Users className="h-6 w-6" />}
-          />
-          <StatsCard
-            title="Monthly Return"
-            value={`${portfolio?.monthlyReturn}%`}
-            change={portfolio?.monthlyReturn}
-            icon={<Percent className="h-6 w-6" />}
-          />
-        </div>
-
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Charts */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Portfolio Performance</h3>
-              <TradingChart 
-                symbol="PORTFOLIO" 
-                interval="1D"
-                height={400}
-                showVWAP={true}
-              />
-            </Card>
-            
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Active Positions</h3>
-              <ActivePositionsTable positions={portfolio?.positions} />
-            </Card>
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Top Traders</h3>
-              <div className="space-y-3">
-                {traders.slice(0, 5).map(trader => (
-                  <TraderQuickCard key={trader.id} trader={trader} />
-                ))}
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Recent Activity</h3>
-              <RecentActivityFeed />
-            </Card>
-          </div>
-        </div>
-      </div>
-    </DashboardLayout>
-  );
-}
-```
-
-### Trader Discovery Page
-```typescript
-// app/traders/page.tsx
-export default function TradersPage() {
-  const [filters, setFilters] = useState({
-    riskLevel: 'all',
-    minReturn: 0,
-    timeframe: '30d',
-    strategy: 'all'
-  });
+**Layout & Design**:
+- **Hero Section**: 
+  - Large heading: "Copy Trading Made Simple on Aptos"
+  - Subheading: "Follow top performers, automate your trading, maximize returns"
+  - Primary CTA: "Connect Wallet & Start Trading" (prominent blue button)
+  - Background: Gradient with subtle trading chart animation
   
-  const { traders, isLoading } = useTraders(filters);
+- **Stats Banner**: Real-time platform statistics
+  - Total traders on platform
+  - Total trading volume (24h)
+  - Average user returns
+  - Number of successful copies today
+  
+- **Feature Highlights**: 3-column grid
+  - **Automated Copy Trading**: "Set once, profit always" with robot icon
+  - **Risk Management**: "Your safety, our priority" with shield icon
+  - **Real-time Analytics**: "Data-driven decisions" with chart icon
+  
+- **How It Works**: 4-step process
+  - Step 1: Connect your Aptos wallet
+  - Step 2: Browse and select top traders
+  - Step 3: Set your risk preferences
+  - Step 4: Start copying trades automatically
+  
+- **Top Performers Preview**: Horizontal scrolling trader cards
+  - Shows 5 top traders with basic stats
+  - "View All Traders" button at the end
+  
+- **Social Proof**: Testimonials and user count
+- **Footer**: Links, social media, legal pages
 
-  return (
-    <DashboardLayout>
-      <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-3xl font-bold">Discover Traders</h1>
-          <Button onClick={() => setShowFilters(!showFilters)}>
-            <Filter className="h-4 w-4 mr-2" />
-            Filters
-          </Button>
-        </div>
+**Interactive Elements**:
+- Wallet connection modal on CTA click
+- Animated counters for statistics
+- Hover effects on feature cards
+- Smooth scrolling navigation
 
-        {/* Filters */}
-        <TraderFilters 
-          filters={filters}
-          onFiltersChange={setFilters}
-        />
+---
 
-        {/* Trader Grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 9 }).map((_, i) => (
-              <TraderCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {traders.map(trader => (
-              <TraderCard
-                key={trader.id}
-                trader={trader}
-                onFollow={handleFollow}
-                onUnfollow={handleUnfollow}
-                isFollowing={followedTraders.includes(trader.id)}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-    </DashboardLayout>
-  );
-}
-```
+### 2. Dashboard Page (`/dashboard`)
+**Purpose**: Central hub for user's trading activity and portfolio overview
+
+**Layout Structure**:
+- **Top Navigation Bar**:
+  - Logo and platform name
+  - Wallet address display (truncated)
+  - Network indicator (Aptos mainnet/testnet)
+  - User avatar dropdown menu
+  - Notifications bell icon with count
+
+- **Page Header**:
+  - Welcome message: "Welcome back, [Username]"
+  - Last login timestamp
+  - Quick action buttons: "Find Traders", "Manage Risk", "Settings"
+
+- **Portfolio Summary Cards** (4-card grid):
+  - **Total Portfolio Value**: 
+    - Large number display ($125,432.56)
+    - 24h change with color coding (green/red)
+    - Percentage change (+2.45%)
+  - **Active Copy Trades**:
+    - Number of traders being copied (8)
+    - Number of active positions (24)
+    - Link to "Manage Copies"
+  - **Today's Performance**:
+    - P&L for current day ($+432.12)
+    - Best performing copy trade
+    - Worst performing position
+  - **Monthly Returns**:
+    - Current month percentage (+12.8%)
+    - Comparison to previous month
+    - Annual projection
+
+- **Main Content Area** (2-column layout):
+  
+  **Left Column (70% width)**:
+  - **Portfolio Performance Chart**:
+    - Time-series chart showing portfolio value
+    - Selectable timeframes: 1D, 7D, 1M, 3M, 1Y
+    - Overlay options: benchmark comparison, individual trader performance
+    - Interactive tooltips with exact values
+    
+  - **Active Positions Table**:
+    - Columns: Asset, Trader, Entry Price, Current Price, P&L, Size, Actions
+    - Sortable by any column
+    - Color-coded P&L (green for profit, red for loss)
+    - Action buttons: View Details, Close Position, Adjust Size
+    - Pagination for large position lists
+  
+  **Right Column (30% width)**:
+  - **Following Traders Panel**:
+    - List of currently followed traders
+    - Each item shows: trader name, allocation amount, 24h performance
+    - Quick action buttons: Pause, Adjust, Unfollow
+    - "Add Trader" button at bottom
+  
+  - **Recent Activity Feed**:
+    - Live feed of copy trades executed
+    - Shows: timestamp, trader, action (buy/sell), asset, amount
+    - Real-time updates via WebSocket
+    - "View All Activity" link
+  
+  - **Market Insights Widget**:
+    - Trending assets on the platform
+    - Popular traders this week
+    - Platform-wide performance metrics
+
+**Interactive Features**:
+- Real-time data updates every 2 seconds
+- Drag-and-drop to rearrange widgets
+- Click-through navigation to detailed views
+- Export functionality for performance data
+- Quick trade execution from positions table
+
+---
+
+### 3. Trader Discovery Page (`/traders`)
+**Purpose**: Browse, filter, and discover top-performing traders to copy
+
+**Layout Structure**:
+- **Page Header**:
+  - Title: "Discover Top Traders"
+  - Search bar: "Search by name, strategy, or asset"
+  - View toggle: Grid view vs List view
+  - Sort dropdown: "Top Rated", "Highest Returns", "Most Followers", "Newest"
+
+- **Filter Sidebar** (collapsible on mobile):
+  - **Performance Filters**:
+    - Minimum monthly return slider (0% to 100%+)
+    - Maximum drawdown slider (0% to -50%)
+    - Sharpe ratio range
+    - Win rate minimum (slider 0% to 100%)
+  
+  - **Risk Filters**:
+    - Risk level checkboxes: Low, Medium, High
+    - Average position size range
+    - Maximum leverage used
+    - Stop loss usage (Yes/No)
+  
+  - **Strategy Filters**:
+    - Trading style: Scalping, Day Trading, Swing, Long-term
+    - Asset categories: DeFi, NFTs, Meme Coins, Blue Chips
+    - Trading frequency: High, Medium, Low
+  
+  - **Social Filters**:
+    - Minimum followers count
+    - Verified traders only
+    - Active in last 7 days
+    - Accepting new copiers
+
+- **Main Content Area**:
+  
+  **Grid View** (default):
+  - 3-column grid on desktop, 2-column on tablet, 1-column on mobile
+  - Each trader card contains:
+    - **Header**: Profile photo, name, username, verification badge
+    - **Key Stats**: Monthly return, followers count, risk rating
+    - **Performance Metrics**: Win rate, average hold time, Sharpe ratio
+    - **Chart**: Mini performance chart (last 30 days)
+    - **Strategy Tags**: Visual tags for trading style and assets
+    - **Action Buttons**: "Follow" (primary), "View Profile" (secondary)
+    - **Quick Info**: Last active, total trades, avg position size
+  
+  **List View**:
+  - Table format with columns:
+    - Trader (photo, name, verification)
+    - 1M Return (percentage and chart)
+    - 3M Return
+    - Followers
+    - Risk Level
+    - Sharpe Ratio
+    - Win Rate
+    - Last Active
+    - Actions (Follow/View buttons)
+
+- **Pagination/Loading**:
+  - Infinite scroll or traditional pagination
+  - Loading skeletons during data fetch
+  - "Load More" button if using pagination
+
+**Interactive Features**:
+- Real-time filter application
+- Favorite traders (heart icon)
+- Quick follow without page navigation
+- Hover effects showing additional stats
+- Sort by multiple criteria
+- Export trader list functionality
+
+---
+
+### 4. Individual Trader Profile Page (`/traders/[id]`)
+**Purpose**: Detailed view of a specific trader's performance and strategy
+
+**Layout Structure**:
+- **Trader Header Section**:
+  - **Left Side**:
+    - Large profile photo
+    - Trader name and username
+    - Verification badges (verified, pro trader, etc.)
+    - Registration date and country flag
+    - Social links (Twitter, Telegram if available)
+  
+  - **Right Side**:
+    - **Follow/Unfollow Button** (prominent)
+    - **Current Allocation** input field and "Update" button (if following)
+    - **Quick Stats Cards**:
+      - Total followers
+      - Current copiers
+      - Total trades executed
+      - Account age
+
+- **Performance Overview Section** (3-column layout):
+  - **Return Metrics**:
+    - 7D, 30D, 90D, 1Y returns
+    - All-time return since joining
+    - Best month / Worst month
+    - Year-to-date performance
+  
+  - **Risk Metrics**:
+    - Maximum drawdown
+    - Sharpe ratio
+    - Sortino ratio
+    - Value at Risk (VaR)
+    - Risk-adjusted return
+  
+  - **Trading Metrics**:
+    - Win rate percentage
+    - Average holding time
+    - Trading frequency (trades per week)
+    - Average position size
+    - Largest single gain/loss
+
+- **Interactive Performance Chart**:
+  - Large time-series chart showing account value over time
+  - Selectable timeframes: 1M, 3M, 6M, 1Y, All
+  - Overlay options:
+    - Benchmark comparison (e.g., APT price)
+    - Drawdown visualization
+    - Major trade markers
+  - Chart controls: zoom, pan, crosshair cursor
+  - Export chart functionality
+
+- **Trading Strategy Section**:
+  - **Strategy Description**: Trader's own description of their approach
+  - **Asset Allocation Pie Chart**: Current portfolio distribution
+  - **Trading Style Tags**: Visual indicators (Scalper, DeFi Farmer, etc.)
+  - **Preferred Assets**: List of most traded tokens
+  - **Trading Hours**: Heatmap showing when trader is most active
+  - **Average Hold Times**: Distribution chart of position durations
+
+- **Trade History Table**:
+  - Columns: Date, Action, Asset, Entry Price, Exit Price, Size, P&L, Duration
+  - Sortable and filterable by date range, asset, profit/loss
+  - Pagination with 20 trades per page
+  - Export to CSV functionality
+  - Color coding for profitable vs losing trades
+
+- **Follower Analytics**:
+  - **Follower Growth Chart**: How follower count has changed over time
+  - **Copy Allocation Distribution**: Chart showing how much followers typically allocate
+  - **Follower Performance**: Average returns of people copying this trader
+  - **Recent Followers**: List of newest followers (if public)
+
+- **Risk Management Section**:
+  - **Stop Loss Usage**: Percentage of trades with stop losses
+  - **Position Sizing**: Chart showing position size distribution
+  - **Correlation Analysis**: How trades correlate with market movements
+  - **Risk Controls**: What automated risk controls the trader uses
+
+- **Social Features**:
+  - **Comments Section**: Follower comments and trader responses
+  - **Trading Notes**: Trader's explanations for recent trades
+  - **Social Stats**: Likes, shares, saves from the community
+  - **Similar Traders**: Recommendations for traders with similar strategies
+
+**Interactive Features**:
+- Follow/unfollow with real-time updates
+- Allocation amount adjustment with immediate effect
+- Trade copying toggle (can pause without unfollowing)
+- Real-time chat or messaging with trader (if enabled)
+- Bookmark trader for later review
+- Share trader profile on social media
+- Report trader if suspicious activity detected
+
+---
+
+### 5. Portfolio Management Page (`/portfolio`)
+**Purpose**: Detailed portfolio analysis and management tools
+
+**Layout Structure**:
+- **Portfolio Header**:
+  - **Total Portfolio Value**: Large display with real-time updates
+  - **Performance Summary**: Cards showing 1D, 7D, 30D performance
+  - **Asset Allocation**: Pie chart showing distribution across different assets
+  - **Risk Score**: Overall portfolio risk rating with explanation
+
+- **Position Management Section**:
+  - **Active Positions Table** (detailed version):
+    - Asset name with logo
+    - Trader who initiated the position
+    - Entry date and price
+    - Current price with real-time updates
+    - Unrealized P&L ($ and %)
+    - Position size and allocation percentage
+    - Risk metrics (beta, volatility)
+    - Action buttons: Close, Modify, Add to position
+  
+  - **Position Filters**:
+    - Filter by trader
+    - Filter by asset type
+    - Filter by profit/loss status
+    - Filter by position size
+    - Date range selector
+
+- **Copy Trade Management**:
+  - **Active Copy Trades Table**:
+    - Trader name and photo
+    - Start date of copying
+    - Amount allocated
+    - Performance since copying started
+    - Current exposure (how much is actively invested)
+    - Status (Active, Paused, Closed)
+    - Action buttons: Pause, Adjust Allocation, Stop Copying
+  
+  - **Copy Trade Settings** (expandable for each trader):
+    - Maximum allocation per trade
+    - Stop loss settings
+    - Take profit settings
+    - Asset blacklist (assets not to copy)
+    - Time-based filters (when to copy)
+
+- **Performance Analytics**:
+  - **Returns Chart**: Interactive chart with multiple overlays
+    - Portfolio performance line
+    - Individual trader performance lines
+    - Benchmark comparison (APT, market index)
+    - Risk-adjusted returns
+  
+  - **Risk Analysis**:
+    - Portfolio beta and alpha
+    - Sharpe and Sortino ratios
+    - Maximum drawdown analysis
+    - Value at Risk calculations
+    - Correlation matrix with major assets
+
+- **Trade History Section**:
+  - **All Trades Table**: Complete history of executed trades
+    - Columns: Date, Trader, Action, Asset, Price, Size, Fees, P&L
+    - Advanced filtering and sorting options
+    - Export functionality (CSV, PDF)
+    - Trade tagging and notes
+  
+  - **Performance Attribution**:
+    - Which traders contributed most to returns
+    - Which assets performed best/worst
+    - Monthly/quarterly performance breakdown
+    - Risk attribution analysis
+
+**Interactive Features**:
+- Real-time position updates
+- Bulk actions for multiple positions
+- Advanced charting with technical indicators
+- Custom alerts and notifications
+- Portfolio optimization suggestions
+- Rebalancing recommendations
+- Risk warnings and limit notifications
+
+---
+
+### 6. Risk Management Page (`/risk`)
+**Purpose**: Configure risk parameters and monitor portfolio risk
+
+**Layout Structure**:
+- **Risk Overview Dashboard**:
+  - **Current Risk Score**: Large gauge showing overall portfolio risk (1-10 scale)
+  - **Risk Breakdown**: Cards showing different risk components
+    - Concentration risk
+    - Liquidity risk
+    - Volatility risk
+    - Correlation risk
+  - **Risk Alerts**: Active warnings and recommendations
+
+- **Global Risk Settings**:
+  - **Portfolio Limits**:
+    - Maximum total portfolio allocation (percentage of balance)
+    - Maximum allocation per trader (percentage and dollar amount)
+    - Maximum allocation per asset (percentage)
+    - Maximum number of concurrent positions
+  
+  - **Loss Limits**:
+    - Daily loss limit (percentage and dollar amount)
+    - Monthly loss limit
+    - Maximum drawdown before auto-stop
+    - Per-position stop loss percentage
+  
+  - **Time-based Controls**:
+    - Trading hours restrictions
+    - Weekend trading toggle
+    - Maximum holding time per position
+    - Cooling-off periods between large losses
+
+- **Trader-Specific Risk Controls**:
+  - **For Each Followed Trader**:
+    - Individual allocation limits
+    - Custom stop loss settings
+    - Asset restrictions (blacklist certain tokens)
+    - Strategy filters (only copy certain types of trades)
+    - Performance-based adjustments (reduce allocation after losses)
+
+- **Risk Monitoring Tools**:
+  - **Real-time Risk Metrics**:
+    - Portfolio volatility
+    - Beta relative to market
+    - Correlation between positions
+    - Concentration ratios
+  
+  - **Stress Testing**:
+    - What-if scenarios (market crash, specific asset collapse)
+    - Historical stress test results
+    - Monte Carlo simulations
+    - Scenario analysis tools
+  
+  - **Risk Alerts Configuration**:
+    - Email/SMS alert settings
+    - Push notification preferences
+    - Alert thresholds for various risk metrics
+    - Emergency contact information
+
+- **Advanced Risk Features**:
+  - **Portfolio Hedging**:
+    - Automatic hedging suggestions
+    - Correlation-based hedging
+    - Market-neutral strategies
+    - Options-based protection (if available)
+  
+  - **Dynamic Risk Adjustment**:
+    - Volatility-based position sizing
+    - Kelly criterion implementation
+    - Risk parity allocation
+    - Adaptive risk limits based on market conditions
+
+**Interactive Features**:
+- Real-time risk calculations
+- Interactive risk scenario modeling
+- Custom risk alerts and notifications
+- Risk limit testing before implementation
+- Historical risk analysis
+- Risk reporting and compliance tools
+
+---
+
+### 7. Community Page (`/community`)
+**Purpose**: Social features, leaderboards, and community engagement
+
+**Layout Structure**:
+- **Community Header**:
+  - Welcome message and community stats
+  - Quick navigation tabs: Leaderboard, Discussions, Insights, Events
+  - User's community level and achievements
+
+- **Leaderboard Section**:
+  - **Multiple Leaderboard Types**:
+    - Top Performers (monthly returns)
+    - Most Followed Traders
+    - Best Risk-Adjusted Returns
+    - Rising Stars (new traders with good performance)
+    - Community Favorites (most liked/commented)
+  
+  - **Leaderboard Display**:
+    - Ranking positions (1-100)
+    - Trader avatars and names
+    - Key performance metrics
+    - Verification badges
+    - Follow buttons for easy copying
+    - Percentage changes from previous period
+
+- **Discussions & Social Feed**:
+  - **Trading Discussions**:
+    - Recent posts from traders and community
+    - Market analysis and predictions
+    - Trading tips and strategies
+    - Q&A sections with experienced traders
+  
+  - **Post Types**:
+    - Text posts with market analysis
+    - Trade explanations and reasoning
+    - Educational content and tutorials
+    - Market news and updates
+    - Achievement celebrations
+  
+  - **Interaction Features**:
+    - Like, comment, and share posts
+    - Follow specific discussion topics
+    - Tag other users and traders
+    - Share trading results and screenshots
+
+- **Market Insights Section**:
+  - **Community Sentiment**:
+    - Bullish/bearish sentiment indicators
+    - Most discussed assets
+    - Community predictions and polls
+    - Sentiment heat map by asset
+  
+  - **Trending Topics**:
+    - Hot discussion topics
+    - Trending hashtags
+    - Popular trading strategies
+    - Emerging market opportunities
+  
+  - **Educational Content**:
+    - Trading guides and tutorials
+    - Strategy explanations
+    - Risk management tips
+    - Platform how-to guides
+
+- **Events & Competitions**:
+  - **Trading Competitions**:
+    - Monthly trading challenges
+    - Leaderboard competitions
+    - Prize pools and rewards
+    - Competition rules and standings
+  
+  - **Community Events**:
+    - Live trading sessions
+    - AMA (Ask Me Anything) with top traders
+    - Educational webinars
+    - Community meetups (virtual/physical)
+  
+  - **Achievement System**:
+    - Trading milestones and badges
+    - Community contribution rewards
+    - Referral program achievements
+    - Special recognition for top performers
+
+**Interactive Features**:
+- Real-time community feed updates
+- Live chat during events
+- Community voting and polls
+- User-generated content submission
+- Social sharing integration
+- Community moderation tools
+
+---
+
+### 8. Analytics & Reports Page (`/analytics`)
+**Purpose**: Advanced analytics, detailed reporting, and performance insights
+
+**Layout Structure**:
+- **Analytics Dashboard Header**:
+  - Date range selector (1M, 3M, 6M, 1Y, Custom)
+  - Report type selector (Performance, Risk, Tax, Attribution)
+  - Export options (PDF, Excel, CSV)
+
+- **Performance Analytics Section**:
+  - **Return Analysis**:
+    - Time-weighted returns vs money-weighted returns
+    - Benchmark comparison charts
+    - Rolling returns analysis
+    - Return attribution by trader and asset
+  
+  - **Risk-Adjusted Performance**:
+    - Sharpe ratio evolution over time
+    - Information ratio analysis
+    - Maximum drawdown periods
+    - Upside/downside capture ratios
+  
+  - **Performance Attribution**:
+    - Which traders contributed most to returns
+    - Asset allocation impact on performance
+    - Timing effect analysis
+    - Alpha and beta decomposition
+
+- **Risk Analytics Section**:
+  - **Portfolio Risk Metrics**:
+    - Value at Risk (VaR) calculations
+    - Expected Shortfall (ES)
+    - Portfolio volatility breakdown
+    - Risk contribution by position
+  
+  - **Correlation Analysis**:
+    - Asset correlation matrix
+    - Rolling correlation charts
+    - Principal component analysis
+    - Factor exposure analysis
+  
+  - **Stress Testing Results**:
+    - Historical scenario analysis
+    - Monte Carlo simulation results
+    - Tail risk analysis
+    - Liquidity risk assessment
+
+- **Trading Analytics Section**:
+  - **Trade Analysis**:
+    - Win/loss ratio trends
+    - Average trade duration
+    - Trade size distribution
+    - Slippage and execution analysis
+  
+  - **Trader Performance Comparison**:
+    - Side-by-side trader comparison
+    - Relative performance metrics
+    - Style analysis and categorization
+    - Consistency scoring
+
+- **Custom Reports Section**:
+  - **Report Builder**:
+    - Drag-and-drop report creation
+    - Custom metric selection
+    - Flexible date ranges
+    - Multiple visualization options
+  
+  - **Scheduled Reports**:
+    - Daily/weekly/monthly automated reports
+    - Email delivery options
+    - Custom report templates
+    - Performance alert integration
+
+**Interactive Features**:
+- Interactive charts with drill-down capabilities
+- Custom dashboard creation
+- Advanced filtering and sorting
+- Real-time metric calculations
+- Comparative analysis tools
+- Data export in multiple formats
+
+---
+
+### 9. Settings Page (`/settings`)
+**Purpose**: User preferences, account management, and platform configuration
+
+**Layout Structure**:
+- **Settings Navigation Sidebar**:
+  - Account Settings
+  - Trading Preferences  
+  - Risk Management
+  - Notifications
+  - Security
+  - Privacy
+  - Billing & Subscription
+  - API Management
+
+- **Account Settings Tab**:
+  - **Profile Information**:
+    - Profile photo upload
+    - Display name and username
+    - Bio and description
+    - Country and timezone
+    - Preferred language
+  
+  - **Contact Information**:
+    - Email address (verified)
+    - Phone number (for 2FA)
+    - Emergency contact
+    - Communication preferences
+
+- **Trading Preferences Tab**:
+  - **Default Settings**:
+    - Default allocation amount for new follows
+    - Preferred position sizing method
+    - Default stop loss percentage
+    - Auto-reinvest profits toggle
+  
+  - **User Interface Preferences**:
+    - Theme selection (Light/Dark/Auto)
+    - Dashboard layout preferences
+    - Chart preferences and indicators
+    - Table display options
+
+- **Notifications Tab**:
+  - **Notification Types**:
+    - Trade execution notifications
+    - Performance milestone alerts
+    - Risk limit warnings
+    - New trader recommendations
+    - Market news and updates
+  
+  - **Delivery Methods**:
+    - In-app notifications
+    - Email notifications
+    - SMS notifications
+    - Push notifications
+    - Webhook URLs
+
+- **Security Tab**:
+  - **Authentication**:
+    - Two-factor authentication setup
+    - Backup codes generation
+    - Login history and active sessions
+    - Password change options
+  
+  - **Wallet Security**:
+    - Connected wallet management
+    - Transaction signing preferences
+    - Withdrawal limits and confirmations
+    - Hardware wallet integration
+
+- **Privacy Tab**:
+  - **Profile Visibility**:
+    - Public profile toggle
+    - Performance sharing preferences
+    - Social features participation
+    - Data sharing with traders
+  
+  - **Data Management**:
+    - Data export options
+    - Account deletion requests
+    - Privacy policy acknowledgment
+    - Cookie preferences
+
+**Interactive Features**:
+- Real-time setting validation
+- Import/export settings functionality
+- Setting backup and restore
+- Advanced security verification
+- Integration testing tools
+- Help documentation links
+
+This comprehensive page specification provides complete detail for every frontend page, including layout, functionality, interactive features, and user experience considerations. Each page is designed to work seamlessly together while serving specific user needs in the copy trading platform.
 
 ---
 
