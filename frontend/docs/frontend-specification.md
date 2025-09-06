@@ -25,9 +25,9 @@
 - **Type-Safe**: Full TypeScript implementation
 
 ### Application Flow
-```
+\`\`\`
 User Login (Wallet) → Dashboard → Trader Selection → Risk Setup → Live Trading → Analytics
-```
+\`\`\`
 
 ### Key User Journeys
 1. **New User Onboarding**
@@ -44,7 +44,7 @@ User Login (Wallet) → Dashboard → Trader Selection → Risk Setup → Live T
 ## Technology Stack & Dependencies
 
 ### Core Framework
-```json
+\`\`\`json
 {
   "framework": "Next.js 14",
   "ui-library": "React 18",
@@ -57,10 +57,10 @@ User Login (Wallet) → Dashboard → Trader Selection → Risk Setup → Live T
   "animations": "Framer Motion",
   "icons": "Lucide React"
 }
-```
+\`\`\`
 
 ### Package.json Dependencies
-```json
+\`\`\`json
 {
   "dependencies": {
     "next": "^14.0.0",
@@ -94,13 +94,13 @@ User Login (Wallet) → Dashboard → Trader Selection → Risk Setup → Live T
     "postcss": "^8.4.31"
   }
 }
-```
+\`\`\`
 
 ---
 
 ## Project Structure
 
-```
+\`\`\`
 src/
 ├── app/                          # Next.js App Router
 │   ├── dashboard/
@@ -172,7 +172,7 @@ src/
     ├── globals.css
     ├── components.css
     └── charts.css
-```
+\`\`\`
 
 ---
 
@@ -181,7 +181,7 @@ src/
 ### Core Component Hierarchy
 
 #### 1. Layout Components
-```typescript
+\`\`\`typescript
 // app/layout.tsx
 export default function RootLayout({
   children,
@@ -205,10 +205,10 @@ export default function RootLayout({
     </html>
   );
 }
-```
+\`\`\`
 
 #### 2. Dashboard Components
-```typescript
+\`\`\`typescript
 // components/dashboard/DashboardLayout.tsx
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -235,10 +235,10 @@ export const DashboardLayout = ({ children, sidebar }: DashboardLayoutProps) => 
     </div>
   );
 };
-```
+\`\`\`
 
 #### 3. Trading Chart Component
-```typescript
+\`\`\`typescript
 // components/charts/TradingChart.tsx
 interface TradingChartProps {
   symbol: string;
@@ -341,10 +341,10 @@ export const TradingChart = ({
     </div>
   );
 };
-```
+\`\`\`
 
 #### 4. Trader Card Component
-```typescript
+\`\`\`typescript
 // components/trader/TraderCard.tsx
 interface TraderCardProps {
   trader: Trader;
@@ -447,7 +447,7 @@ export const TraderCard = ({
     </Card>
   );
 };
-```
+\`\`\`
 
 ---
 
@@ -456,7 +456,7 @@ export const TraderCard = ({
 ### Global State Architecture
 Using Zustand for lightweight state management:
 
-```typescript
+\`\`\`typescript
 // store/useAppStore.ts
 interface AppState {
   // User state
@@ -510,11 +510,11 @@ export const useAppStore = create<AppState>((set, get) => ({
   toggleSidebar: () => 
     set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 }));
-```
+\`\`\`
 
 ### Custom Hooks for Data Management
 
-```typescript
+\`\`\`typescript
 // hooks/useTraders.ts
 export const useTraders = () => {
   const { data, error, isLoading, mutate } = useSWR(
@@ -557,9 +557,9 @@ export const useTraders = () => {
     refresh: mutate,
   };
 };
-```
+\`\`\`
 
-```typescript
+\`\`\`typescript
 // hooks/useRealtime.ts
 export const useRealtime = (symbol: string) => {
   const [data, setData] = useState<RealtimeData | null>(null);
@@ -586,14 +586,14 @@ export const useRealtime = (symbol: string) => {
 
   return { data, isConnected };
 };
-```
+\`\`\`
 
 ---
 
 ## UI/UX Design System
 
 ### Color Palette
-```css
+\`\`\`css
 :root {
   /* Primary Colors */
   --color-primary: #2563eb;
@@ -626,10 +626,10 @@ export const useRealtime = (symbol: string) => {
   --color-border: #334155;
   --color-input: #334155;
 }
-```
+\`\`\`
 
 ### Typography Scale
-```css
+\`\`\`css
 .text-display {
   font-size: 3.5rem;
   line-height: 1.2;
@@ -665,10 +665,10 @@ export const useRealtime = (symbol: string) => {
   line-height: 1.5;
   font-weight: 400;
 }
-```
+\`\`\`
 
 ### Component Variants
-```typescript
+\`\`\`typescript
 // components/ui/button.tsx
 const buttonVariants = cva(
   "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background",
@@ -696,14 +696,14 @@ const buttonVariants = cva(
     },
   }
 );
-```
+\`\`\`
 
 ---
 
 ## Real-time Data Integration
 
 ### WebSocket Implementation
-```typescript
+\`\`\`typescript
 // hooks/useWebSocket.ts
 export const useWebSocket = (url: string) => {
   const [socket, setSocket] = useState<WebSocket | null>(null);
@@ -745,10 +745,10 @@ export const useWebSocket = (url: string) => {
 
   return { data, isConnected, sendMessage };
 };
-```
+\`\`\`
 
 ### Data Polling Strategy
-```typescript
+\`\`\`typescript
 // hooks/usePolling.ts
 export const usePolling = <T>(
   fetcher: () => Promise<T>,
@@ -785,7 +785,7 @@ export const usePolling = <T>(
 
   return { data, error, isLoading };
 };
-```
+\`\`\`
 
 ---
 
@@ -856,7 +856,7 @@ export const usePolling = <T>(
 ## Code Examples
 
 ### Main Dashboard Page
-```typescript
+\`\`\`typescript
 // app/dashboard/page.tsx
 export default function Dashboard() {
   const { user } = useAppStore();
@@ -937,10 +937,10 @@ export default function Dashboard() {
     </DashboardLayout>
   );
 }
-```
+\`\`\`
 
 ### Trader Discovery Page
-```typescript
+\`\`\`typescript
 // app/traders/page.tsx
 export default function TradersPage() {
   const [filters, setFilters] = useState({
@@ -993,14 +993,14 @@ export default function TradersPage() {
     </DashboardLayout>
   );
 }
-```
+\`\`\`
 
 ---
 
 ## Testing Strategy
 
 ### Unit Testing
-```typescript
+\`\`\`typescript
 // __tests__/components/TraderCard.test.tsx
 import { render, screen, fireEvent } from '@testing-library/react';
 import { TraderCard } from '@/components/trader/TraderCard';
@@ -1050,10 +1050,10 @@ describe('TraderCard', () => {
     expect(onFollow).toHaveBeenCalledWith('1');
   });
 });
-```
+\`\`\`
 
 ### Integration Testing
-```typescript
+\`\`\`typescript
 // __tests__/pages/dashboard.test.tsx
 import { render, screen, waitFor } from '@testing-library/react';
 import Dashboard from '@/app/dashboard/page';
@@ -1088,10 +1088,10 @@ describe('Dashboard Page', () => {
     expect(screen.getByText(/login/i)).toBeInTheDocument();
   });
 });
-```
+\`\`\`
 
 ### E2E Testing
-```typescript
+\`\`\`typescript
 // e2e/trader-discovery.spec.ts
 import { test, expect } from '@playwright/test';
 
@@ -1124,14 +1124,14 @@ test.describe('Trader Discovery', () => {
     await expect(firstTraderCard.locator('[data-testid="follow-button"]')).toContainText('Unfollow');
   });
 });
-```
+\`\`\`
 
 ---
 
 ## Performance Optimization
 
 ### Code Splitting
-```typescript
+\`\`\`typescript
 // Dynamic imports for large components
 const TradingChart = dynamic(() => import('@/components/charts/TradingChart'), {
   loading: () => <ChartSkeleton />,
@@ -1141,10 +1141,10 @@ const TradingChart = dynamic(() => import('@/components/charts/TradingChart'), {
 const TraderDetails = dynamic(() => import('@/components/trader/TraderDetails'), {
   loading: () => <DetailsSkeleton />,
 });
-```
+\`\`\`
 
 ### Memoization
-```typescript
+\`\`\`typescript
 // Memoize expensive calculations
 const memoizedStats = useMemo(() => {
   return calculatePortfolioStats(positions, prices);
@@ -1155,10 +1155,10 @@ const MemoizedTraderCard = memo(TraderCard, (prevProps, nextProps) => {
   return prevProps.trader.id === nextProps.trader.id &&
          prevProps.isFollowing === nextProps.isFollowing;
 });
-```
+\`\`\`
 
 ### Virtual Scrolling
-```typescript
+\`\`\`typescript
 // For large lists of traders
 import { FixedSizeList as List } from 'react-window';
 
@@ -1179,6 +1179,6 @@ const TraderList = ({ traders }) => {
     </List>
   );
 };
-```
+\`\`\`
 
 This comprehensive frontend plan provides everything needed to build a professional, scalable, and performant copy trading platform frontend. The modular architecture ensures maintainability while the real-time features provide the responsive experience users expect from modern trading applications.
