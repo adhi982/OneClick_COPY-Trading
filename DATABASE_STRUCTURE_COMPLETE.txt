@@ -1,0 +1,622 @@
+DATABASE STRUCTURE FOR ONECLICK COPY TRADING PLATFORM
+====================================================
+
+OVERVIEW:
+This document outlines the complete database structure for the enhanced copy trading platform with community features, premium channels, subscription system, and real-time trading capabilities.
+
+DATABASE TECHNOLOGY:
+- Primary Database: PostgreSQL 14+ (ACID compliance, JSON support)
+- Cache Layer: Redis 6+ (Session storage, real-time data)
+- Time Series: TimescaleDB extension for PostgreSQL
+- Search Engine: Elasticsearch (optional for advanced search)
+
+====================================================
+1. USER MANAGEMENT TABLES
+====================================================
+
+USERS TABLE:
+- id (UUID, Primary Key)
+- email (VARCHAR, Unique, Not Null)
+- username (VARCHAR, Unique, Not Null)
+- password_hash (VARCHAR, Not Null)
+- first_name (VARCHAR)
+- last_name (VARCHAR)
+- avatar_url (VARCHAR)
+- bio (TEXT)
+- phone_number (VARCHAR)
+- country (VARCHAR)
+- timezone (VARCHAR)
+- email_verified (BOOLEAN, Default: false)
+- phone_verified (BOOLEAN, Default: false)
+- two_factor_enabled (BOOLEAN, Default: false)
+- account_status (ENUM: active, suspended, banned, pending)
+- subscription_tier (ENUM: free, basic, premium, vip)
+- total_followers (INTEGER, Default: 0)
+- total_following (INTEGER, Default: 0)
+- verification_badge (BOOLEAN, Default: false)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+- last_login_at (TIMESTAMP)
+
+USER_PROFILES TABLE:
+- user_id (UUID, Foreign Key to users.id)
+- trading_experience (ENUM: beginner, intermediate, advanced, expert)
+- risk_tolerance (ENUM: low, medium, high)
+- preferred_assets (JSON Array)
+- investment_goals (TEXT)
+- annual_income_range (VARCHAR)
+- net_worth_range (VARCHAR)
+- trading_style (ENUM: scalping, day_trading, swing, long_term)
+- social_media_links (JSON Object)
+- achievements (JSON Array)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+USER_SETTINGS TABLE:
+- user_id (UUID, Foreign Key to users.id)
+- notifications_enabled (BOOLEAN, Default: true)
+- email_notifications (JSON Object)
+- push_notifications (JSON Object)
+- privacy_settings (JSON Object)
+- language_preference (VARCHAR, Default: 'en')
+- theme_preference (ENUM: light, dark, auto)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+====================================================
+2. AUTHENTICATION & SECURITY TABLES
+====================================================
+
+USER_SESSIONS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- token_hash (VARCHAR, Not Null)
+- device_info (JSON Object)
+- ip_address (INET)
+- location (VARCHAR)
+- expires_at (TIMESTAMP, Not Null)
+- created_at (TIMESTAMP, Default: NOW())
+- last_active_at (TIMESTAMP, Default: NOW())
+
+PASSWORD_RESETS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- token_hash (VARCHAR, Not Null)
+- expires_at (TIMESTAMP, Not Null)
+- used (BOOLEAN, Default: false)
+- created_at (TIMESTAMP, Default: NOW())
+
+TWO_FACTOR_AUTH TABLE:
+- user_id (UUID, Foreign Key to users.id)
+- secret_key (VARCHAR, Encrypted)
+- backup_codes (JSON Array, Encrypted)
+- enabled_at (TIMESTAMP)
+- last_used_at (TIMESTAMP)
+
+API_KEYS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- name (VARCHAR, Not Null)
+- key_hash (VARCHAR, Not Null)
+- permissions (JSON Array)
+- last_used_at (TIMESTAMP)
+- expires_at (TIMESTAMP)
+- created_at (TIMESTAMP, Default: NOW())
+
+====================================================
+3. EXCHANGE INTEGRATION TABLES
+====================================================
+
+USER_EXCHANGES TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- exchange_name (VARCHAR, Not Null)
+- api_key (VARCHAR, Encrypted)
+- api_secret (VARCHAR, Encrypted)
+- passphrase (VARCHAR, Encrypted, Nullable)
+- sandbox_mode (BOOLEAN, Default: false)
+- status (ENUM: connected, disconnected, error)
+- last_sync_at (TIMESTAMP)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+SUPPORTED_EXCHANGES TABLE:
+- id (UUID, Primary Key)
+- name (VARCHAR, Unique, Not Null)
+- display_name (VARCHAR, Not Null)
+- logo_url (VARCHAR)
+- api_documentation_url (VARCHAR)
+- supported_features (JSON Array)
+- is_active (BOOLEAN, Default: true)
+- created_at (TIMESTAMP, Default: NOW())
+
+====================================================
+4. PORTFOLIO & TRADING TABLES
+====================================================
+
+PORTFOLIOS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- name (VARCHAR, Not Null)
+- description (TEXT)
+- total_value_usd (DECIMAL(20,8))
+- total_pnl_usd (DECIMAL(20,8))
+- total_pnl_percentage (DECIMAL(10,4))
+- risk_score (DECIMAL(5,2))
+- is_default (BOOLEAN, Default: false)
+- is_public (BOOLEAN, Default: false)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+PORTFOLIO_POSITIONS TABLE:
+- id (UUID, Primary Key)
+- portfolio_id (UUID, Foreign Key to portfolios.id)
+- asset_symbol (VARCHAR, Not Null)
+- quantity (DECIMAL(20,8), Not Null)
+- average_buy_price (DECIMAL(20,8))
+- current_price (DECIMAL(20,8))
+- total_value_usd (DECIMAL(20,8))
+- unrealized_pnl_usd (DECIMAL(20,8))
+- unrealized_pnl_percentage (DECIMAL(10,4))
+- last_updated_at (TIMESTAMP, Default: NOW())
+
+TRADES TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- portfolio_id (UUID, Foreign Key to portfolios.id)
+- exchange_id (UUID, Foreign Key to user_exchanges.id)
+- order_id (VARCHAR)
+- trade_type (ENUM: market, limit, stop_loss, take_profit)
+- side (ENUM: buy, sell)
+- asset_symbol (VARCHAR, Not Null)
+- quantity (DECIMAL(20,8), Not Null)
+- price (DECIMAL(20,8))
+- filled_quantity (DECIMAL(20,8), Default: 0)
+- filled_price (DECIMAL(20,8))
+- total_value_usd (DECIMAL(20,8))
+- fees_usd (DECIMAL(20,8))
+- status (ENUM: pending, filled, partially_filled, cancelled, failed)
+- source (ENUM: manual, copy_trade, signal, bot)
+- signal_id (UUID, Foreign Key to trading_signals.id, Nullable)
+- copied_from_user_id (UUID, Foreign Key to users.id, Nullable)
+- executed_at (TIMESTAMP)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+TRADE_HISTORY TABLE:
+- id (UUID, Primary Key)
+- trade_id (UUID, Foreign Key to trades.id)
+- status (VARCHAR, Not Null)
+- price (DECIMAL(20,8))
+- quantity (DECIMAL(20,8))
+- timestamp (TIMESTAMP, Default: NOW())
+- exchange_response (JSON Object)
+
+====================================================
+5. COMMUNITY & SOCIAL TABLES
+====================================================
+
+COMMUNITY_POSTS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- channel_id (UUID, Foreign Key to premium_channels.id, Nullable)
+- post_type (ENUM: trade, analysis, discussion, signal)
+- title (VARCHAR)
+- content (TEXT, Not Null)
+- media_urls (JSON Array)
+- trade_data (JSON Object, Nullable)
+- tags (JSON Array)
+- visibility (ENUM: public, subscribers_only, followers_only)
+- is_pinned (BOOLEAN, Default: false)
+- likes_count (INTEGER, Default: 0)
+- comments_count (INTEGER, Default: 0)
+- shares_count (INTEGER, Default: 0)
+- views_count (INTEGER, Default: 0)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+POST_LIKES TABLE:
+- post_id (UUID, Foreign Key to community_posts.id)
+- user_id (UUID, Foreign Key to users.id)
+- created_at (TIMESTAMP, Default: NOW())
+- PRIMARY KEY (post_id, user_id)
+
+POST_COMMENTS TABLE:
+- id (UUID, Primary Key)
+- post_id (UUID, Foreign Key to community_posts.id)
+- user_id (UUID, Foreign Key to users.id)
+- parent_comment_id (UUID, Foreign Key to post_comments.id, Nullable)
+- content (TEXT, Not Null)
+- likes_count (INTEGER, Default: 0)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+COMMENT_LIKES TABLE:
+- comment_id (UUID, Foreign Key to post_comments.id)
+- user_id (UUID, Foreign Key to users.id)
+- created_at (TIMESTAMP, Default: NOW())
+- PRIMARY KEY (comment_id, user_id)
+
+USER_FOLLOWS TABLE:
+- follower_id (UUID, Foreign Key to users.id)
+- following_id (UUID, Foreign Key to users.id)
+- created_at (TIMESTAMP, Default: NOW())
+- PRIMARY KEY (follower_id, following_id)
+
+====================================================
+6. PREMIUM CHANNELS & SUBSCRIPTION TABLES
+====================================================
+
+PREMIUM_CHANNELS TABLE:
+- id (UUID, Primary Key)
+- creator_id (UUID, Foreign Key to users.id)
+- name (VARCHAR, Not Null)
+- description (TEXT)
+- banner_url (VARCHAR)
+- category (VARCHAR)
+- tags (JSON Array)
+- pricing_monthly (DECIMAL(10,2))
+- pricing_yearly (DECIMAL(10,2))
+- currency (VARCHAR, Default: 'USD')
+- subscription_tier (ENUM: basic, premium, vip)
+- is_active (BOOLEAN, Default: true)
+- is_featured (BOOLEAN, Default: false)
+- subscriber_count (INTEGER, Default: 0)
+- total_signals (INTEGER, Default: 0)
+- success_rate (DECIMAL(5,2))
+- avg_return_percentage (DECIMAL(10,4))
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+CHANNEL_STATISTICS TABLE:
+- channel_id (UUID, Foreign Key to premium_channels.id)
+- date (DATE, Not Null)
+- new_subscribers (INTEGER, Default: 0)
+- total_subscribers (INTEGER, Default: 0)
+- signals_sent (INTEGER, Default: 0)
+- successful_signals (INTEGER, Default: 0)
+- total_return_percentage (DECIMAL(10,4))
+- revenue_usd (DECIMAL(12,2))
+- PRIMARY KEY (channel_id, date)
+
+SUBSCRIPTIONS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- channel_id (UUID, Foreign Key to premium_channels.id)
+- status (ENUM: active, cancelled, expired, pending, suspended)
+- billing_cycle (ENUM: monthly, yearly)
+- amount_paid (DECIMAL(10,2))
+- currency (VARCHAR, Default: 'USD')
+- start_date (TIMESTAMP, Not Null)
+- end_date (TIMESTAMP)
+- next_billing_date (TIMESTAMP)
+- auto_renew (BOOLEAN, Default: true)
+- cancellation_reason (TEXT)
+- cancelled_at (TIMESTAMP)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+SUBSCRIPTION_HISTORY TABLE:
+- id (UUID, Primary Key)
+- subscription_id (UUID, Foreign Key to subscriptions.id)
+- action (ENUM: created, renewed, cancelled, suspended, reactivated)
+- amount (DECIMAL(10,2))
+- currency (VARCHAR)
+- payment_method (VARCHAR)
+- transaction_id (VARCHAR)
+- notes (TEXT)
+- created_at (TIMESTAMP, Default: NOW())
+
+====================================================
+7. PAYMENT & BILLING TABLES
+====================================================
+
+PAYMENT_METHODS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- type (ENUM: credit_card, debit_card, paypal, crypto_wallet, bank_transfer)
+- provider (VARCHAR)
+- external_id (VARCHAR)
+- is_primary (BOOLEAN, Default: false)
+- card_last_four (VARCHAR)
+- card_brand (VARCHAR)
+- card_expiry_month (INTEGER)
+- card_expiry_year (INTEGER)
+- crypto_wallet_address (VARCHAR)
+- crypto_network (VARCHAR)
+- is_active (BOOLEAN, Default: true)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+PAYMENTS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- subscription_id (UUID, Foreign Key to subscriptions.id, Nullable)
+- payment_method_id (UUID, Foreign Key to payment_methods.id)
+- amount (DECIMAL(12,2), Not Null)
+- currency (VARCHAR, Default: 'USD')
+- status (ENUM: pending, processing, completed, failed, refunded, cancelled)
+- payment_provider (VARCHAR)
+- external_transaction_id (VARCHAR)
+- processor_fee (DECIMAL(12,2))
+- net_amount (DECIMAL(12,2))
+- failure_reason (TEXT)
+- refund_amount (DECIMAL(12,2))
+- refunded_at (TIMESTAMP)
+- processed_at (TIMESTAMP)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+INVOICES TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- payment_id (UUID, Foreign Key to payments.id)
+- invoice_number (VARCHAR, Unique, Not Null)
+- description (TEXT)
+- subtotal (DECIMAL(12,2))
+- tax_amount (DECIMAL(12,2))
+- total_amount (DECIMAL(12,2))
+- currency (VARCHAR, Default: 'USD')
+- status (ENUM: draft, sent, paid, overdue, cancelled)
+- due_date (TIMESTAMP)
+- paid_at (TIMESTAMP)
+- invoice_url (VARCHAR)
+- created_at (TIMESTAMP, Default: NOW())
+
+====================================================
+8. TRADING SIGNALS TABLES
+====================================================
+
+TRADING_SIGNALS TABLE:
+- id (UUID, Primary Key)
+- channel_id (UUID, Foreign Key to premium_channels.id)
+- creator_id (UUID, Foreign Key to users.id)
+- signal_type (ENUM: buy, sell, hold)
+- asset_symbol (VARCHAR, Not Null)
+- entry_price (DECIMAL(20,8))
+- current_price (DECIMAL(20,8))
+- stop_loss (DECIMAL(20,8))
+- take_profit (DECIMAL(20,8))
+- quantity_suggestion (DECIMAL(20,8))
+- confidence_level (INTEGER)
+- timeframe (VARCHAR)
+- reasoning (TEXT)
+- status (ENUM: active, closed, cancelled, expired)
+- performance_percentage (DECIMAL(10,4))
+- followers_count (INTEGER, Default: 0)
+- copies_count (INTEGER, Default: 0)
+- expires_at (TIMESTAMP)
+- closed_at (TIMESTAMP)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+
+SIGNAL_UPDATES TABLE:
+- id (UUID, Primary Key)
+- signal_id (UUID, Foreign Key to trading_signals.id)
+- update_type (ENUM: price_target, stop_loss, take_profit, status, reasoning)
+- old_value (VARCHAR)
+- new_value (VARCHAR)
+- description (TEXT)
+- created_at (TIMESTAMP, Default: NOW())
+
+SIGNAL_FOLLOWERS TABLE:
+- signal_id (UUID, Foreign Key to trading_signals.id)
+- user_id (UUID, Foreign Key to users.id)
+- follow_type (ENUM: watching, copying, copied)
+- copy_amount (DECIMAL(12,2))
+- copy_percentage (DECIMAL(5,2))
+- created_at (TIMESTAMP, Default: NOW())
+- PRIMARY KEY (signal_id, user_id)
+
+SIGNAL_PERFORMANCE TABLE:
+- signal_id (UUID, Foreign Key to trading_signals.id)
+- date (DATE, Not Null)
+- price_at_date (DECIMAL(20,8))
+- performance_percentage (DECIMAL(10,4))
+- total_followers (INTEGER)
+- total_copies (INTEGER)
+- PRIMARY KEY (signal_id, date)
+
+====================================================
+9. NOTIFICATIONS & ALERTS TABLES
+====================================================
+
+NOTIFICATIONS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- type (ENUM: trade_alert, signal_update, community_interaction, subscription, security, system)
+- title (VARCHAR, Not Null)
+- message (TEXT, Not Null)
+- data (JSON Object)
+- is_read (BOOLEAN, Default: false)
+- priority (ENUM: low, normal, high, urgent)
+- delivery_method (JSON Array)
+- read_at (TIMESTAMP)
+- created_at (TIMESTAMP, Default: NOW())
+
+NOTIFICATION_PREFERENCES TABLE:
+- user_id (UUID, Foreign Key to users.id)
+- notification_type (VARCHAR, Not Null)
+- enabled (BOOLEAN, Default: true)
+- email_enabled (BOOLEAN, Default: true)
+- push_enabled (BOOLEAN, Default: true)
+- sms_enabled (BOOLEAN, Default: false)
+- created_at (TIMESTAMP, Default: NOW())
+- updated_at (TIMESTAMP, Default: NOW())
+- PRIMARY KEY (user_id, notification_type)
+
+PRICE_ALERTS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id)
+- asset_symbol (VARCHAR, Not Null)
+- condition_type (ENUM: above, below, percentage_change)
+- target_price (DECIMAL(20,8))
+- percentage_change (DECIMAL(10,4))
+- is_active (BOOLEAN, Default: true)
+- triggered_at (TIMESTAMP)
+- created_at (TIMESTAMP, Default: NOW())
+
+====================================================
+10. MARKET DATA TABLES (TIME SERIES)
+====================================================
+
+MARKET_DATA TABLE:
+- time (TIMESTAMPTZ, Not Null)
+- symbol (VARCHAR, Not Null)
+- open_price (DECIMAL(20,8))
+- high_price (DECIMAL(20,8))
+- low_price (DECIMAL(20,8))
+- close_price (DECIMAL(20,8))
+- volume (DECIMAL(20,8))
+- market_cap (DECIMAL(20,2))
+- PRIMARY KEY (time, symbol)
+
+PRICE_HISTORY TABLE:
+- time (TIMESTAMPTZ, Not Null)
+- symbol (VARCHAR, Not Null)
+- price (DECIMAL(20,8), Not Null)
+- volume (DECIMAL(20,8))
+- source (VARCHAR)
+- PRIMARY KEY (time, symbol)
+
+MARKET_SENTIMENT TABLE:
+- time (TIMESTAMPTZ, Not Null)
+- symbol (VARCHAR, Not Null)
+- sentiment_score (DECIMAL(5,4))
+- fear_greed_index (INTEGER)
+- social_volume (INTEGER)
+- news_sentiment (DECIMAL(5,4))
+- PRIMARY KEY (time, symbol)
+
+====================================================
+11. ANALYTICS & REPORTING TABLES
+====================================================
+
+USER_ANALYTICS TABLE:
+- user_id (UUID, Foreign Key to users.id)
+- date (DATE, Not Null)
+- total_trades (INTEGER, Default: 0)
+- successful_trades (INTEGER, Default: 0)
+- total_volume_usd (DECIMAL(20,2))
+- total_pnl_usd (DECIMAL(20,2))
+- portfolio_value_usd (DECIMAL(20,2))
+- risk_score (DECIMAL(5,2))
+- login_count (INTEGER, Default: 0)
+- time_spent_minutes (INTEGER, Default: 0)
+- PRIMARY KEY (user_id, date)
+
+PLATFORM_ANALYTICS TABLE:
+- date (DATE, Primary Key)
+- total_users (INTEGER, Default: 0)
+- active_users (INTEGER, Default: 0)
+- new_registrations (INTEGER, Default: 0)
+- total_trades (INTEGER, Default: 0)
+- total_volume_usd (DECIMAL(20,2))
+- total_revenue_usd (DECIMAL(20,2))
+- total_subscriptions (INTEGER, Default: 0)
+- avg_session_duration_minutes (INTEGER, Default: 0)
+
+CHANNEL_ANALYTICS TABLE:
+- channel_id (UUID, Foreign Key to premium_channels.id)
+- date (DATE, Not Null)
+- views (INTEGER, Default: 0)
+- new_subscribers (INTEGER, Default: 0)
+- signals_sent (INTEGER, Default: 0)
+- avg_signal_performance (DECIMAL(10,4))
+- revenue_usd (DECIMAL(12,2))
+- engagement_rate (DECIMAL(5,4))
+- PRIMARY KEY (channel_id, date)
+
+====================================================
+12. AUDIT & LOGGING TABLES
+====================================================
+
+AUDIT_LOGS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id, Nullable)
+- action (VARCHAR, Not Null)
+- resource_type (VARCHAR)
+- resource_id (VARCHAR)
+- old_values (JSON Object)
+- new_values (JSON Object)
+- ip_address (INET)
+- user_agent (TEXT)
+- created_at (TIMESTAMP, Default: NOW())
+
+SYSTEM_LOGS TABLE:
+- id (UUID, Primary Key)
+- level (ENUM: debug, info, warning, error, critical)
+- service (VARCHAR, Not Null)
+- message (TEXT, Not Null)
+- context (JSON Object)
+- stack_trace (TEXT)
+- created_at (TIMESTAMP, Default: NOW())
+
+SECURITY_EVENTS TABLE:
+- id (UUID, Primary Key)
+- user_id (UUID, Foreign Key to users.id, Nullable)
+- event_type (VARCHAR, Not Null)
+- severity (ENUM: low, medium, high, critical)
+- description (TEXT, Not Null)
+- ip_address (INET)
+- location (VARCHAR)
+- resolved (BOOLEAN, Default: false)
+- resolved_at (TIMESTAMP)
+- created_at (TIMESTAMP, Default: NOW())
+
+====================================================
+13. INDEXES FOR PERFORMANCE
+====================================================
+
+RECOMMENDED INDEXES:
+- users(email), users(username) - Unique authentication
+- trades(user_id, created_at) - User trade history
+- community_posts(user_id, created_at) - User posts
+- subscriptions(user_id, status) - Active subscriptions
+- trading_signals(channel_id, created_at) - Channel signals
+- market_data(symbol, time) - Time series queries
+- notifications(user_id, is_read, created_at) - User notifications
+- payments(user_id, status, created_at) - Payment history
+
+COMPOSITE INDEXES:
+- (user_id, asset_symbol) on portfolio_positions
+- (channel_id, status, created_at) on trading_signals
+- (post_id, created_at) on post_comments
+- (symbol, time DESC) on price_history
+
+====================================================
+14. DATA RETENTION POLICIES
+====================================================
+
+RETENTION PERIODS:
+- Market data: 5 years (with aggregation)
+- Trade history: Indefinite (regulatory requirement)
+- User sessions: 30 days
+- Audit logs: 7 years (compliance)
+- System logs: 90 days
+- Notifications: 1 year
+- Price alerts: Until deleted by user
+
+ARCHIVAL STRATEGY:
+- Monthly aggregation of market data
+- Quarterly backup of critical tables
+- Automated cleanup of expired sessions
+- Compression of old audit logs
+
+====================================================
+15. BACKUP & DISASTER RECOVERY
+====================================================
+
+BACKUP STRATEGY:
+- Daily full backups of PostgreSQL
+- Real-time replication to standby server
+- Weekly backups to cloud storage
+- Point-in-time recovery capability
+
+MONITORING:
+- Database performance metrics
+- Connection pool monitoring
+- Query performance analysis
+- Storage usage tracking
+
+This comprehensive database structure supports all features of the enhanced copy trading platform while maintaining performance, scalability, and data integrity.

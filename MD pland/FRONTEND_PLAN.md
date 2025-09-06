@@ -111,8 +111,15 @@ src/
 │   │   ├── page.tsx             # Trader discovery
 │   │   └── [id]/page.tsx        # Trader details
 │   ├── community/
-│   │   ├── page.tsx             # Community hub
-│   │   └── leaderboard/page.tsx # Leaderboards
+│   │   ├── page.tsx             # Community hub & posts
+│   │   ├── leaderboard/page.tsx # Leaderboards
+│   │   ├── channels/page.tsx    # Premium channels discovery
+│   │   ├── channels/[id]/page.tsx # Individual channel page
+│   │   └── create-channel/page.tsx # Create new channel
+│   ├── subscriptions/
+│   │   ├── page.tsx             # My subscriptions
+│   │   ├── manage/page.tsx      # Manage my channels
+│   │   └── payment/page.tsx     # Payment processing
 │   ├── layout.tsx               # Root layout
 │   ├── page.tsx                 # Landing page
 │   └── globals.css              # Global styles
@@ -145,7 +152,17 @@ src/
 │   │   ├── Leaderboard.tsx
 │   │   ├── TopPerformers.tsx
 │   │   ├── TradingFeed.tsx
-│   │   └── SocialStats.tsx
+│   │   ├── SocialStats.tsx
+│   │   ├── PostCard.tsx
+│   │   ├── CreatePost.tsx
+│   │   ├── ChannelCard.tsx
+│   │   └── ChannelChat.tsx
+│   ├── subscription/            # Subscription components
+│   │   ├── ChannelSubscribe.tsx
+│   │   ├── PaymentModal.tsx
+│   │   ├── SubscriptionCard.tsx
+│   │   ├── RealtimeTradeAlert.tsx
+│   │   └── ChannelSettings.tsx
 │   └── wallet/                  # Wallet components
 │       ├── WalletButton.tsx
 │       ├── WalletModal.tsx
@@ -155,7 +172,10 @@ src/
 │   ├── useTraders.ts           # Trader data management
 │   ├── usePortfolio.ts         # Portfolio state
 │   ├── useRealtime.ts          # Real-time data
-│   └── useWebSocket.ts         # WebSocket connections
+│   ├── useWebSocket.ts         # WebSocket connections
+│   ├── useCommunity.ts         # Community posts and interactions
+│   ├── useSubscriptions.ts     # Subscription management
+│   └── usePayments.ts          # Payment processing
 ├── lib/                        # Utility libraries
 │   ├── aptos.ts                # Aptos client setup
 │   ├── api.ts                  # API client
@@ -448,6 +468,938 @@ export const TraderCard = ({
   );
 };
 ```
+
+#### 5. Community Post Component
+```typescript
+// components/community/PostCard.tsx
+interface PostCardProps {
+  post: CommunityPost;
+  onLike: (postId: string) => void;
+  onComment: (postId: string, comment: string) => void;
+  onShare: (postId: string) => void;
+}
+
+export const PostCard = ({ post, onLike, onComment, onShare }: PostCardProps) => {
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
+
+  return (
+    <Card className="p-6 mb-4">
+      {/* Post Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={post.author.avatar} alt={post.author.name} />
+            <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h4 className="font-semibold">{post.author.name}</h4>
+            <p className="text-sm text-gray-500">{formatDistanceToNow(post.createdAt)} ago</p>
+          </div>
+        </div>
+        <Badge variant={post.type === 'trade' ? 'success' : 'secondary'}>
+          {post.type.toUpperCase()}
+        </Badge>
+      </div>
+
+      {/* Post Content */}
+      <div className="mb-4">
+        <p className="text-gray-800 mb-3">{post.content}</p>
+        
+        {/* Trade Details if trade post */}
+        {post.type === 'trade' && post.tradeData && (
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="grid grid-cols-2 gap-4 text-sm">
+              <div>
+                <span className="font-medium">Asset:</span> {post.tradeData.symbol}
+              </div>
+              <div>
+                <span className="font-medium">Action:</span> 
+                <Badge variant={post.tradeData.side === 'buy' ? 'success' : 'destructive'} className="ml-2">
+                  {post.tradeData.side.toUpperCase()}
+                </Badge>
+              </div>
+              <div>
+                <span className="font-medium">Price:</span> ${post.tradeData.price}
+              </div>
+              <div>
+                <span className="font-medium">P&L:</span> 
+                <span className={post.tradeData.pnl >= 0 ? 'text-green-600' : 'text-red-600'}>
+                  {post.tradeData.pnl >= 0 ? '+' : ''}${post.tradeData.pnl}
+                </span>
+              </div>
+            </div>
+            {post.tradeData.reasoning && (
+              <div className="mt-3">
+                <span className="font-medium">Reasoning:</span>
+                <p className="text-gray-600 mt-1">{post.tradeData.reasoning}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Post Actions */}
+      <div className="flex items-center justify-between border-t pt-3">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onLike(post.id)}
+            className="flex items-center space-x-2"
+          >
+            <Heart className={`h-4 w-4 ${post.isLiked ? 'fill-red-500 text-red-500' : ''}`} />
+            <span>{post.likes}</span>
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowComments(!showComments)}
+            className="flex items-center space-x-2"
+          >
+            <MessageCircle className="h-4 w-4" />
+            <span>{post.comments.length}</span>
+          </Button>
+          
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onShare(post.id)}
+            className="flex items-center space-x-2"
+          >
+            <Share2 className="h-4 w-4" />
+            <span>Share</span>
+          </Button>
+        </div>
+
+        {/* Copy Trade Button for trade posts */}
+        {post.type === 'trade' && post.tradeData && (
+          <Button size="sm" variant="outline">
+            <Copy className="h-4 w-4 mr-2" />
+            Copy Trade
+          </Button>
+        )}
+      </div>
+    </Card>
+  );
+};
+```
+
+#### 6. Premium Channel Card Component
+```typescript
+// components/subscription/ChannelCard.tsx
+interface ChannelCardProps {
+  channel: PremiumChannel;
+  onSubscribe: (channelId: string) => void;
+  isSubscribed: boolean;
+}
+
+export const ChannelCard = ({ channel, onSubscribe, isSubscribed }: ChannelCardProps) => {
+  return (
+    <Card className="p-6 hover:shadow-lg transition-shadow">
+      {/* Channel Header */}
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-4">
+          <Avatar className="h-12 w-12">
+            <AvatarImage src={channel.creator.avatar} alt={channel.creator.name} />
+            <AvatarFallback>{channel.creator.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <h3 className="font-semibold text-lg">{channel.name}</h3>
+            <p className="text-sm text-gray-600">by {channel.creator.name}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="text-2xl font-bold text-blue-600">
+            ${channel.pricing.monthly}/mo
+          </p>
+        </div>
+      </div>
+
+      {/* Channel Stats */}
+      <div className="grid grid-cols-3 gap-4 mb-4">
+        <div className="text-center">
+          <p className="text-xl font-bold text-green-600">
+            +{channel.stats.avgSubscriberReturn}%
+          </p>
+          <p className="text-xs text-gray-600">Avg Return</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-bold">{channel.stats.subscribers}</p>
+          <p className="text-xs text-gray-600">Subscribers</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-bold">{channel.stats.signalAccuracy}%</p>
+          <p className="text-xs text-gray-600">Accuracy</p>
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex space-x-2">
+        {isSubscribed ? (
+          <Button className="flex-1" variant="outline" disabled>
+            <Check className="h-4 w-4 mr-2" />
+            Subscribed
+          </Button>
+        ) : (
+          <Button 
+            className="flex-1"
+            onClick={() => onSubscribe(channel.id)}
+          >
+            Subscribe Now
+          </Button>
+        )}
+      </div>
+    </Card>
+  );
+};
+```
+
+#### 7. Real-time Signal Alert Component
+```typescript
+// components/subscription/RealtimeTradeAlert.tsx
+interface SignalAlertProps {
+  signal: TradingSignal;
+  onCopyTrade: (signalId: string) => void;
+  onDismiss: (signalId: string) => void;
+}
+
+export const RealtimeTradeAlert = ({ signal, onCopyTrade, onDismiss }: SignalAlertProps) => {
+  const [timeElapsed, setTimeElapsed] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeElapsed(prev => prev + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <Card className={`p-4 border-l-4 ${
+      signal.type === 'buy' ? 'border-l-green-500' : 'border-l-red-500'
+    } animate-pulse-once`}>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={signal.creator.avatar} alt={signal.creator.name} />
+            <AvatarFallback>{signal.creator.name.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <div>
+            <div className="flex items-center space-x-2">
+              <Badge variant={signal.type === 'buy' ? 'success' : 'destructive'}>
+                {signal.type.toUpperCase()}
+              </Badge>
+              <span className="font-semibold">{signal.asset}</span>
+              <span className="text-sm text-gray-500">@${signal.price}</span>
+            </div>
+            <p className="text-xs text-gray-500">
+              from {signal.creator.name} • {timeElapsed}s ago
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex space-x-2">
+          <Button 
+            size="sm" 
+            onClick={() => onCopyTrade(signal.id)}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            Copy Trade
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => onDismiss(signal.id)}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      </div>
+      
+      {signal.stopLoss && signal.takeProfit && (
+        <div className="mt-2 text-xs text-gray-600 grid grid-cols-2 gap-4">
+          <div>SL: ${signal.stopLoss}</div>
+          <div>TP: ${signal.takeProfit}</div>
+        </div>
+      )}
+    </Card>
+  );
+};
+```
+
+#### 8. Subscription Management Components
+```typescript
+// components/subscription/SubscriptionManager.tsx
+export const SubscriptionManager = () => {
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [billingHistory, setBillingHistory] = useState<BillingRecord[]>([]);
+
+  return (
+    <div className="space-y-6">
+      {/* Active Subscriptions */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Active Subscriptions</h3>
+        <div className="space-y-4">
+          {subscriptions.map((sub) => (
+            <div key={sub.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div className="flex items-center space-x-4">
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={sub.channel.creator.avatar} />
+                  <AvatarFallback>{sub.channel.creator.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h4 className="font-medium">{sub.channel.name}</h4>
+                  <p className="text-sm text-gray-600">
+                    Next billing: {format(sub.nextBillingDate, 'MMM dd, yyyy')}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="font-semibold">${sub.amount}/month</p>
+                  <Badge variant={sub.status === 'active' ? 'success' : 'secondary'}>
+                    {sub.status}
+                  </Badge>
+                </div>
+                
+                <Button variant="outline" size="sm">
+                  Manage
+                </Button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+
+      {/* Payment Methods */}
+      <Card className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold">Payment Methods</h3>
+          <Button size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Method
+          </Button>
+        </div>
+        
+        <div className="space-y-3">
+          <div className="flex items-center justify-between p-4 border rounded-lg">
+            <div className="flex items-center space-x-3">
+              <CreditCard className="h-5 w-5 text-gray-500" />
+              <div>
+                <p className="font-medium">•••• •••• •••• 4242</p>
+                <p className="text-sm text-gray-600">Expires 12/25</p>
+              </div>
+            </div>
+            <Badge variant="secondary">Primary</Badge>
+          </div>
+        </div>
+      </Card>
+
+      {/* Billing History */}
+      <Card className="p-6">
+        <h3 className="text-lg font-semibold mb-4">Billing History</h3>
+        <div className="space-y-3">
+          {billingHistory.map((record) => (
+            <div key={record.id} className="flex items-center justify-between p-3 border-b">
+              <div>
+                <p className="font-medium">{record.description}</p>
+                <p className="text-sm text-gray-600">
+                  {format(record.date, 'MMM dd, yyyy')}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="font-semibold">${record.amount}</p>
+                <Badge variant={record.status === 'paid' ? 'success' : 'destructive'}>
+                  {record.status}
+                </Badge>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Card>
+    </div>
+  );
+};
+```
+
+#### 9. Payment Processing Component
+```typescript
+// components/subscription/PaymentModal.tsx
+interface PaymentModalProps {
+  channel: PremiumChannel;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: (subscriptionId: string) => void;
+}
+
+export const PaymentModal = ({ channel, isOpen, onClose, onSuccess }: PaymentModalProps) => {
+  const [paymentMethod, setPaymentMethod] = useState<'card' | 'crypto'>('card');
+  const [processing, setProcessing] = useState(false);
+
+  const handlePayment = async () => {
+    setProcessing(true);
+    try {
+      // Payment processing logic
+      const response = await processSubscriptionPayment({
+        channelId: channel.id,
+        paymentMethod,
+        amount: channel.pricing.monthly
+      });
+      
+      onSuccess(response.subscriptionId);
+      onClose();
+    } catch (error) {
+      console.error('Payment failed:', error);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>Subscribe to {channel.name}</DialogTitle>
+          <DialogDescription>
+            You'll get access to premium trading signals and exclusive content
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Subscription Summary */}
+          <Card className="p-4 bg-gray-50">
+            <div className="flex justify-between items-center">
+              <span>Monthly Subscription</span>
+              <span className="font-semibold">${channel.pricing.monthly}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm text-gray-600">
+              <span>Billing cycle</span>
+              <span>Monthly (auto-renew)</span>
+            </div>
+          </Card>
+
+          {/* Payment Method Selection */}
+          <div className="space-y-3">
+            <Label>Payment Method</Label>
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant={paymentMethod === 'card' ? 'default' : 'outline'}
+                onClick={() => setPaymentMethod('card')}
+                className="flex items-center space-x-2"
+              >
+                <CreditCard className="h-4 w-4" />
+                <span>Credit Card</span>
+              </Button>
+              <Button
+                variant={paymentMethod === 'crypto' ? 'default' : 'outline'}
+                onClick={() => setPaymentMethod('crypto')}
+                className="flex items-center space-x-2"
+              >
+                <Wallet className="h-4 w-4" />
+                <span>Crypto</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* Payment Form */}
+          {paymentMethod === 'card' && (
+            <div className="space-y-3">
+              <div>
+                <Label htmlFor="cardNumber">Card Number</Label>
+                <Input id="cardNumber" placeholder="1234 5678 9012 3456" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="expiry">Expiry</Label>
+                  <Input id="expiry" placeholder="MM/YY" />
+                </div>
+                <div>
+                  <Label htmlFor="cvc">CVC</Label>
+                  <Input id="cvc" placeholder="123" />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {paymentMethod === 'crypto' && (
+            <div className="space-y-3">
+              <div className="p-4 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  Connect your crypto wallet to complete the payment with APT tokens
+                </p>
+              </div>
+              <Button variant="outline" className="w-full">
+                <Wallet className="h-4 w-4 mr-2" />
+                Connect Wallet
+              </Button>
+            </div>
+          )}
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>
+            Cancel
+          </Button>
+          <Button onClick={handlePayment} disabled={processing}>
+            {processing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Processing...
+              </>
+            ) : (
+              `Subscribe for $${channel.pricing.monthly}/mo`
+            )}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+```
+
+## 6. API Integration
+
+### Community & Social Features APIs
+```typescript
+// services/api/community.ts
+export const communityAPI = {
+  // Community Posts
+  getPosts: (filters?: PostFilters) => 
+    api.get<CommunityPost[]>('/api/community/posts', { params: filters }),
+  
+  createPost: (postData: CreatePostRequest) =>
+    api.post<CommunityPost>('/api/community/posts', postData),
+    
+  likePost: (postId: string) =>
+    api.post(`/api/community/posts/${postId}/like`),
+    
+  addComment: (postId: string, comment: string) =>
+    api.post(`/api/community/posts/${postId}/comments`, { comment }),
+    
+  sharePost: (postId: string) =>
+    api.post(`/api/community/posts/${postId}/share`),
+
+  // Channel Discovery
+  getChannels: (filters?: ChannelFilters) =>
+    api.get<PremiumChannel[]>('/api/channels', { params: filters }),
+    
+  getChannelDetails: (channelId: string) =>
+    api.get<PremiumChannelDetails>(`/api/channels/${channelId}`),
+    
+  getChannelPosts: (channelId: string, page = 1) =>
+    api.get<CommunityPost[]>(`/api/channels/${channelId}/posts`, { 
+      params: { page } 
+    }),
+};
+```
+
+### Subscription & Payment APIs
+```typescript
+// services/api/subscriptions.ts
+export const subscriptionAPI = {
+  // Subscription Management
+  getUserSubscriptions: () =>
+    api.get<Subscription[]>('/api/subscriptions'),
+    
+  subscribeToChannel: (channelId: string, paymentData: PaymentRequest) =>
+    api.post<SubscriptionResponse>('/api/subscriptions', {
+      channelId,
+      ...paymentData
+    }),
+    
+  cancelSubscription: (subscriptionId: string) =>
+    api.delete(`/api/subscriptions/${subscriptionId}`),
+    
+  updateSubscription: (subscriptionId: string, updates: SubscriptionUpdate) =>
+    api.patch(`/api/subscriptions/${subscriptionId}`, updates),
+
+  // Payment Processing
+  processPayment: (paymentData: PaymentRequest) =>
+    api.post<PaymentResponse>('/api/payments/process', paymentData),
+    
+  getBillingHistory: () =>
+    api.get<BillingRecord[]>('/api/payments/history'),
+    
+  updatePaymentMethod: (methodData: PaymentMethodData) =>
+    api.post<PaymentMethod>('/api/payments/methods', methodData),
+    
+  getPaymentMethods: () =>
+    api.get<PaymentMethod[]>('/api/payments/methods'),
+};
+```
+
+### Real-time Trading Signals API
+```typescript
+// services/api/signals.ts
+export const signalsAPI = {
+  // Signal Streaming
+  connectSignalStream: (channelIds: string[]) => {
+    const socket = io('/signals', {
+      query: { channels: channelIds.join(',') }
+    });
+    
+    return {
+      onSignal: (callback: (signal: TradingSignal) => void) =>
+        socket.on('new_signal', callback),
+        
+      onSignalUpdate: (callback: (update: SignalUpdate) => void) =>
+        socket.on('signal_update', callback),
+        
+      disconnect: () => socket.disconnect()
+    };
+  },
+  
+  // Signal Management
+  copyTrade: (signalId: string, customAmount?: number) =>
+    api.post<TradeExecutionResult>(`/api/signals/${signalId}/copy`, {
+      amount: customAmount
+    }),
+    
+  getSignalHistory: (channelId: string, limit = 50) =>
+    api.get<TradingSignal[]>(`/api/channels/${channelId}/signals`, {
+      params: { limit }
+    }),
+    
+  getSignalPerformance: (signalId: string) =>
+    api.get<SignalPerformance>(`/api/signals/${signalId}/performance`),
+};
+```
+
+## 7. TypeScript Interfaces
+
+### Community & Social Types
+```typescript
+// types/community.ts
+export interface CommunityPost {
+  id: string;
+  type: 'trade' | 'analysis' | 'discussion';
+  content: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string;
+    verified: boolean;
+    followers: number;
+  };
+  createdAt: Date;
+  likes: number;
+  isLiked: boolean;
+  comments: Comment[];
+  tradeData?: {
+    symbol: string;
+    side: 'buy' | 'sell';
+    price: number;
+    quantity: number;
+    pnl: number;
+    reasoning?: string;
+    stopLoss?: number;
+    takeProfit?: number;
+  };
+  tags: string[];
+  visibility: 'public' | 'subscribers_only';
+}
+
+export interface Comment {
+  id: string;
+  content: string;
+  author: {
+    id: string;
+    name: string;
+    avatar: string;
+  };
+  createdAt: Date;
+  likes: number;
+}
+
+export interface PremiumChannel {
+  id: string;
+  name: string;
+  description: string;
+  creator: {
+    id: string;
+    name: string;
+    avatar: string;
+    verified: boolean;
+    totalSubscribers: number;
+  };
+  pricing: {
+    monthly: number;
+    yearly?: number;
+    currency: 'USD' | 'APT';
+  };
+  stats: {
+    subscribers: number;
+    avgSubscriberReturn: number;
+    signalAccuracy: number;
+    totalSignals: number;
+    activeTraders: number;
+  };
+  categories: string[];
+  isSubscribed: boolean;
+  subscribedAt?: Date;
+  tier: 'basic' | 'premium' | 'vip';
+}
+```
+
+### Subscription & Payment Types
+```typescript
+// types/subscriptions.ts
+export interface Subscription {
+  id: string;
+  channelId: string;
+  channel: PremiumChannel;
+  userId: string;
+  status: 'active' | 'cancelled' | 'expired' | 'pending';
+  startDate: Date;
+  endDate: Date;
+  nextBillingDate: Date;
+  amount: number;
+  currency: string;
+  paymentMethod: 'card' | 'crypto';
+  autoRenew: boolean;
+}
+
+export interface PaymentRequest {
+  channelId: string;
+  amount: number;
+  currency: string;
+  paymentMethod: 'card' | 'crypto';
+  cardData?: {
+    number: string;
+    expiry: string;
+    cvc: string;
+    holderName: string;
+  };
+  cryptoData?: {
+    walletAddress: string;
+    transactionHash?: string;
+  };
+}
+
+export interface BillingRecord {
+  id: string;
+  subscriptionId: string;
+  amount: number;
+  currency: string;
+  description: string;
+  date: Date;
+  status: 'paid' | 'failed' | 'pending' | 'refunded';
+  paymentMethod: string;
+  invoiceUrl?: string;
+}
+
+export interface PaymentMethod {
+  id: string;
+  type: 'card' | 'crypto';
+  isPrimary: boolean;
+  cardData?: {
+    last4: string;
+    brand: string;
+    expiry: string;
+  };
+  cryptoData?: {
+    walletAddress: string;
+    network: string;
+  };
+  createdAt: Date;
+}
+```
+
+### Trading Signal Types
+```typescript
+// types/signals.ts
+export interface TradingSignal {
+  id: string;
+  channelId: string;
+  creator: {
+    id: string;
+    name: string;
+    avatar: string;
+  };
+  type: 'buy' | 'sell';
+  asset: string;
+  price: number;
+  quantity?: number;
+  stopLoss?: number;
+  takeProfit?: number;
+  reasoning: string;
+  confidence: number; // 1-10
+  timeframe: string;
+  createdAt: Date;
+  expiresAt?: Date;
+  status: 'active' | 'filled' | 'cancelled' | 'expired';
+  performance?: {
+    currentPrice: number;
+    pnlPercent: number;
+    followers: number;
+    successRate: number;
+  };
+}
+
+export interface SignalUpdate {
+  signalId: string;
+  type: 'price_update' | 'status_change' | 'performance_update';
+  data: any;
+  timestamp: Date;
+}
+
+export interface TradeExecutionResult {
+  success: boolean;
+  orderId?: string;
+  message: string;
+  executedPrice?: number;
+  executedQuantity?: number;
+  fees?: number;
+}
+```
+
+## 8. Implementation Roadmap
+
+### Phase 1: Foundation Setup (Week 1-2)
+1. **Project Structure Enhancement**
+   - Set up new routing for community/channels/subscriptions
+   - Configure additional dependencies (react-query, socket.io-client)
+   - Set up TypeScript interfaces and API structures
+
+2. **Basic Community Features**
+   - Implement community posts display
+   - Add post creation functionality
+   - Basic like/comment system
+
+### Phase 2: Premium Channels (Week 3-4)
+1. **Channel Discovery**
+   - Channel listing page with filters
+   - Channel detail pages
+   - Creator profiles and statistics
+
+2. **Subscription System**
+   - Payment modal implementation
+   - Subscription management dashboard
+   - Basic billing integration
+
+### Phase 3: Real-time Features (Week 5-6)
+1. **Live Trading Signals**
+   - WebSocket integration for real-time signals
+   - Signal alert notifications
+   - Copy trading functionality
+
+2. **Enhanced Community**
+   - Real-time post updates
+   - Live chat in premium channels
+   - Advanced post filtering and search
+
+### Phase 4: Advanced Features (Week 7-8)
+1. **Analytics & Performance**
+   - Detailed subscription analytics
+   - Signal performance tracking
+   - Creator dashboard enhancements
+
+2. **Payment & Billing**
+   - Multiple payment methods
+   - Crypto payment integration
+   - Advanced billing management
+
+## 9. Integration with Existing System
+
+### Current System Compatibility
+- All new features are additive and won't break existing functionality
+- Maintains existing dashboard, portfolio, and trading pages
+- Uses same authentication and user management system
+- Extends existing API structure with new endpoints
+
+### Database Schema Extensions
+```sql
+-- Community Posts
+CREATE TABLE community_posts (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  type VARCHAR(20) NOT NULL,
+  content TEXT NOT NULL,
+  trade_data JSONB,
+  visibility VARCHAR(20) DEFAULT 'public',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Premium Channels
+CREATE TABLE premium_channels (
+  id UUID PRIMARY KEY,
+  creator_id UUID REFERENCES users(id),
+  name VARCHAR(255) NOT NULL,
+  description TEXT,
+  pricing JSONB NOT NULL,
+  stats JSONB DEFAULT '{}',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Subscriptions
+CREATE TABLE subscriptions (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  channel_id UUID REFERENCES premium_channels(id),
+  status VARCHAR(20) DEFAULT 'active',
+  start_date TIMESTAMP DEFAULT NOW(),
+  end_date TIMESTAMP,
+  amount DECIMAL(10,2),
+  payment_method VARCHAR(20)
+);
+
+-- Trading Signals
+CREATE TABLE trading_signals (
+  id UUID PRIMARY KEY,
+  channel_id UUID REFERENCES premium_channels(id),
+  creator_id UUID REFERENCES users(id),
+  signal_type VARCHAR(10) NOT NULL,
+  asset VARCHAR(20) NOT NULL,
+  price DECIMAL(15,8),
+  stop_loss DECIMAL(15,8),
+  take_profit DECIMAL(15,8),
+  reasoning TEXT,
+  confidence INTEGER,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### Security Considerations
+1. **Authentication**: All premium features require user authentication
+2. **Authorization**: Subscription-based access control for premium content
+3. **Payment Security**: PCI compliance for card payments, secure wallet integration for crypto
+4. **Data Protection**: User trading data and payment information encryption
+5. **API Rate Limiting**: Prevent abuse of community and signal endpoints
+
+### Performance Optimizations
+1. **Caching Strategy**: Redis caching for channel data, signal history, and user subscriptions
+2. **Database Indexing**: Optimized queries for community posts and signal feeds
+3. **Real-time Efficiency**: WebSocket connection pooling and message queuing
+4. **CDN Integration**: Static assets and image optimization for user-generated content
+
+## 10. Monitoring & Analytics
+
+### Key Metrics to Track
+1. **Community Engagement**
+   - Daily/monthly active users in community
+   - Post creation and interaction rates
+   - User retention in community features
+
+2. **Subscription Performance**
+   - Conversion rates from free to premium
+   - Subscription retention rates
+   - Revenue per channel/creator
+
+3. **Trading Signal Effectiveness**
+   - Signal accuracy and performance
+   - Copy trade success rates
+   - User profitability from following signals
+
+### Development Tools
+- **State Management**: Zustand for local state, React Query for server state
+- **Testing**: Jest + React Testing Library for component tests
+- **Monitoring**: Error tracking with Sentry, analytics with custom dashboard
+- **Documentation**: Storybook for component documentation
+
+This comprehensive frontend plan integrates seamlessly with your existing copy trading platform while adding powerful community features and a sustainable subscription model. The architecture supports real-time trading signals, social interaction, and monetization through premium channels.
 
 ---
 
@@ -1309,96 +2261,370 @@ export const usePolling = <T>(
 
 ---
 
-### 7. Community Page (`/community`)
-**Purpose**: Social features, leaderboards, and community engagement
+### 7. Community Page (`/community`) - Enhanced Social Hub
+**Purpose**: Social features, leaderboards, community posts, and premium channel discovery
 
 **Layout Structure**:
 - **Community Header**:
   - Welcome message and community stats
-  - Quick navigation tabs: Leaderboard, Discussions, Insights, Events
+  - Quick navigation tabs: Feed, Leaderboard, Channels, My Posts
   - User's community level and achievements
+  - "Create Post" button (prominent)
 
-- **Leaderboard Section**:
-  - **Multiple Leaderboard Types**:
-    - Top Performers (monthly returns)
-    - Most Followed Traders
-    - Best Risk-Adjusted Returns
-    - Rising Stars (new traders with good performance)
-    - Community Favorites (most liked/commented)
+- **Main Feed Section**:
+  - **Create Post Widget**:
+    - Post type selector: Text, Trade Share, Strategy, News
+    - Rich text editor with media upload
+    - Trading position sharing (auto-fill from portfolio)
+    - Hashtag suggestions and mentions
+    - Privacy settings (Public, Followers, Premium Channel)
   
-  - **Leaderboard Display**:
-    - Ranking positions (1-100)
-    - Trader avatars and names
-    - Key performance metrics
-    - Verification badges
-    - Follow buttons for easy copying
-    - Percentage changes from previous period
+  - **Social Feed**:
+    - **Post Types Display**:
+      - Text posts with market analysis
+      - Trade sharing with P&L screenshots
+      - Strategy explanations with charts
+      - Achievement celebrations
+      - Market news and commentary
+    
+    - **Post Interactions**:
+      - Like, comment, share, save
+      - Follow/unfollow post author
+      - Copy trade button (if trade post)
+      - Report inappropriate content
+    
+    - **Post Filtering**:
+      - Filter by post type
+      - Filter by followed users
+      - Filter by performance (profitable trades only)
+      - Filter by asset/market
 
-- **Discussions & Social Feed**:
-  - **Trading Discussions**:
-    - Recent posts from traders and community
-    - Market analysis and predictions
-    - Trading tips and strategies
-    - Q&A sections with experienced traders
+- **Premium Channels Discovery**:
+  - **Featured Channels Section**:
+    - Top performing channels (by subscriber returns)
+    - Newest channels with introductory offers
+    - Most popular channels by subscriber count
+    - Verified trader channels
   
-  - **Post Types**:
-    - Text posts with market analysis
-    - Trade explanations and reasoning
-    - Educational content and tutorials
-    - Market news and updates
-    - Achievement celebrations
-  
-  - **Interaction Features**:
-    - Like, comment, and share posts
-    - Follow specific discussion topics
-    - Tag other users and traders
-    - Share trading results and screenshots
+  - **Channel Preview Cards**:
+    - Channel name and creator profile
+    - Subscription price (monthly/yearly)
+    - Number of subscribers
+    - Average subscriber returns
+    - Sample posts/signals (last 24h)
+    - "Subscribe" button with price
+    - Free trial availability
 
-- **Market Insights Section**:
-  - **Community Sentiment**:
-    - Bullish/bearish sentiment indicators
-    - Most discussed assets
-    - Community predictions and polls
-    - Sentiment heat map by asset
-  
-  - **Trending Topics**:
-    - Hot discussion topics
-    - Trending hashtags
-    - Popular trading strategies
-    - Emerging market opportunities
-  
-  - **Educational Content**:
-    - Trading guides and tutorials
-    - Strategy explanations
-    - Risk management tips
-    - Platform how-to guides
-
-- **Events & Competitions**:
-  - **Trading Competitions**:
-    - Monthly trading challenges
-    - Leaderboard competitions
-    - Prize pools and rewards
-    - Competition rules and standings
-  
-  - **Community Events**:
-    - Live trading sessions
-    - AMA (Ask Me Anything) with top traders
-    - Educational webinars
-    - Community meetups (virtual/physical)
-  
-  - **Achievement System**:
-    - Trading milestones and badges
-    - Community contribution rewards
-    - Referral program achievements
-    - Special recognition for top performers
+- **Leaderboard Section** (Same as before):
+  - Top Performers, Most Followed, etc.
+  - Now includes "Channel Creators" leaderboard
 
 **Interactive Features**:
-- Real-time community feed updates
-- Live chat during events
+- Real-time post updates and notifications
+- Live chat in channel previews
 - Community voting and polls
-- User-generated content submission
+- Post analytics for creators
 - Social sharing integration
-- Community moderation tools
+- Advanced post search and filtering
+
+---
+
+### 8. Premium Channels Page (`/community/channels`)
+**Purpose**: Discover and subscribe to premium trading channels
+
+**Layout Structure**:
+- **Page Header**:
+  - Title: "Premium Trading Channels"
+  - Search bar: "Search channels by name, strategy, or creator"
+  - Filter options: Price range, Performance, Category
+  - Sort dropdown: "Top Rated", "Best Performance", "Most Subscribers", "Newest"
+
+- **Filter Sidebar**:
+  - **Price Filters**:
+    - Price range slider ($0 - $500/month)
+    - Free trial available
+    - Discount offers
+    - Payment frequency (monthly/yearly)
+  
+  - **Performance Filters**:
+    - Minimum subscriber returns
+    - Channel creator performance
+    - Number of signals per day
+    - Success rate of signals
+  
+  - **Category Filters**:
+    - DeFi signals
+    - NFT trading
+    - Swing trading
+    - Day trading
+    - Long-term investing
+
+- **Channel Grid Display**:
+  - **Channel Cards**:
+    - Creator profile with verification badge
+    - Channel name and description
+    - Subscription pricing
+    - Key statistics (subscribers, avg returns, signal frequency)
+    - Performance chart (last 30 days)
+    - Sample recent signals
+    - Member testimonials/reviews
+    - "Subscribe Now" or "Free Trial" button
+
+**Interactive Features**:
+- Channel preview without subscription
+- Compare multiple channels
+- Wishlist favorite channels
+- Share channel recommendations
+- Filter by subscriber reviews
+
+---
+
+### 9. Individual Channel Page (`/community/channels/[id]`)
+**Purpose**: Detailed view of a premium channel with subscription options
+
+**Layout Structure**:
+- **Channel Header**:
+  - **Left Side**:
+    - Channel banner/logo
+    - Channel name and tagline
+    - Creator profile and verification
+    - Channel category tags
+    - Creation date and subscriber count
+  
+  - **Right Side**:
+    - **Subscription Widget**:
+      - Current pricing (monthly/yearly)
+      - Free trial information
+      - "Subscribe Now" button
+      - "Start Free Trial" button
+      - Money-back guarantee info
+
+- **Channel Statistics Section**:
+  - **Performance Metrics**:
+    - Average subscriber returns
+    - Signal accuracy rate
+    - Signals per week
+    - Average holding time
+    - Best performing month
+  
+  - **Subscriber Analytics**:
+    - Total subscribers
+    - Subscriber growth chart
+    - Retention rate
+    - Average subscription length
+    - Testimonials and reviews
+
+- **Sample Content Preview**:
+  - **Recent Signals** (last 5 without details):
+    - Signal type and asset
+    - Entry price and timestamp
+    - Current status (open/closed)
+    - P&L if closed (blurred for non-subscribers)
+  
+  - **Educational Content Preview**:
+    - Strategy explanations
+    - Market analysis posts
+    - Trading tips and insights
+    - Live trading session recordings
+
+- **Subscription Benefits**:
+  - **What You Get**:
+    - Real-time trading signals
+    - Entry/exit notifications
+    - Risk management advice
+    - Educational content access
+    - Community chat access
+    - Strategy explanations
+  
+  - **Pricing Tiers** (if multiple):
+    - Basic: Signals only
+    - Premium: Signals + education
+    - VIP: Everything + 1-on-1 sessions
+
+**Interactive Features**:
+- Subscribe with one click
+- Payment processing integration
+- Free trial activation
+- Review and rating system
+- Channel recommendation engine
+- Social sharing of channel
+
+---
+
+### 10. My Subscriptions Page (`/subscriptions`)
+**Purpose**: Manage active subscriptions and view subscription benefits
+
+**Layout Structure**:
+- **Subscriptions Overview**:
+  - **Active Subscriptions Cards**:
+    - Channel name and creator
+    - Subscription type and price
+    - Next billing date
+    - Days remaining if trial
+    - Performance since subscribing
+    - Quick actions: Pause, Cancel, Upgrade
+  
+  - **Subscription Statistics**:
+    - Total monthly subscription cost
+    - Average return across all channels
+    - Best performing subscription
+    - Money saved/earned from signals
+
+- **Real-time Signals Feed**:
+  - **Live Trading Alerts**:
+    - Channel name and creator photo
+    - Signal type (Buy/Sell/Hold)
+    - Asset name and current price
+    - Recommended entry price
+    - Stop loss and take profit levels
+    - Risk level and position size suggestion
+    - Time since signal (live counter)
+  
+  - **Signal Interactions**:
+    - "Copy Trade" button
+    - "Add to Watchlist" button
+    - Like/save signal
+    - Comment on signal
+    - Report signal accuracy
+
+- **Channel Chat Access**:
+  - **Active Channel Chats**:
+    - Real-time chat with other subscribers
+    - Creator occasional participation
+    - Q&A sessions
+    - Signal discussions
+    - Market analysis debates
+
+**Interactive Features**:
+- Real-time signal notifications
+- One-click trade copying from signals
+- Signal performance tracking
+- Subscription management tools
+- Billing history and invoices
+
+---
+
+### 11. Channel Management Page (`/subscriptions/manage`)
+**Purpose**: For channel creators to manage their premium channels
+
+**Layout Structure**:
+- **Channel Overview Dashboard**:
+  - **Channel Statistics**:
+    - Total subscribers
+    - Monthly recurring revenue
+    - Subscriber growth rate
+    - Average subscriber lifetime
+    - Channel performance rating
+  
+  - **Revenue Analytics**:
+    - Monthly revenue chart
+    - Subscription conversion rates
+    - Trial to paid conversion
+    - Churn rate analysis
+    - Revenue projections
+
+- **Content Management**:
+  - **Signal Publishing**:
+    - Quick signal creation form
+    - Signal templates for common setups
+    - Bulk signal publishing
+    - Signal scheduling
+    - Performance tracking per signal
+  
+  - **Post Management**:
+    - Create educational content
+    - Market analysis posts
+    - Strategy explanations
+    - Community announcements
+    - Subscriber-only content
+
+- **Subscriber Management**:
+  - **Subscriber List**:
+    - Subscriber profiles and join dates
+    - Subscription status and type
+    - Performance of each subscriber
+    - Engagement metrics
+    - Communication tools
+  
+  - **Engagement Tools**:
+    - Send messages to all subscribers
+    - Schedule announcements
+    - Create polls and surveys
+    - Host live Q&A sessions
+    - Moderate channel chat
+
+- **Channel Settings**:
+  - **Pricing Management**:
+    - Subscription price adjustment
+    - Free trial duration
+    - Discount promotions
+    - Payment frequency options
+    - Currency selection
+  
+  - **Channel Configuration**:
+    - Channel description and rules
+    - Content categories
+    - Privacy settings
+    - Moderation settings
+    - Auto-responses setup
+
+**Interactive Features**:
+- Real-time subscriber notifications
+- Signal performance analytics
+- Revenue optimization suggestions
+- Subscriber feedback system
+- Channel promotion tools
+
+---
+
+### 12. Payment Processing Page (`/subscriptions/payment`)
+**Purpose**: Handle subscription payments and billing
+
+**Layout Structure**:
+- **Payment Form**:
+  - **Subscription Details**:
+    - Channel name and creator
+    - Subscription type and benefits
+    - Pricing breakdown
+    - Tax calculations (if applicable)
+    - Total amount due
+  
+  - **Payment Methods**:
+    - Credit/Debit card form
+    - Crypto payment options (APT, USDC)
+    - PayPal integration
+    - Bank transfer (for higher amounts)
+    - Saved payment methods
+  
+  - **Billing Information**:
+    - Billing address
+    - Tax identification (if required)
+    - Invoice preferences
+    - Billing frequency selection
+    - Auto-renewal settings
+
+- **Payment Security**:
+  - **Security Features**:
+    - SSL encryption indicators
+    - Payment processor badges
+    - Security policy links
+    - Refund policy information
+    - Customer support contact
+
+- **Order Summary**:
+  - **Final Review**:
+    - Complete subscription details
+    - Payment method confirmation
+    - Terms and conditions
+    - Money-back guarantee info
+    - "Complete Payment" button
+
+**Interactive Features**:
+- Real-time payment processing
+- Payment failure handling
+- Subscription confirmation
+- Automatic invoice generation
+- Receipt email sending
 
 ---
 
