@@ -1,0 +1,15 @@
+[package]
+name = "copy_trading"
+version = "1.0.0"
+upgrade_policy = "compatible"
+
+[addresses]
+copy_trading = "_"
+
+[dev-addresses]
+copy_trading = "_"
+
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework", rev = "main" }
+
+[dev-dependencies]
