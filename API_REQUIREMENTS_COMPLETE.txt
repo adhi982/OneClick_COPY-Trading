@@ -1,0 +1,632 @@
+API REQUIREMENTS FOR ONECLICK COPY TRADING PLATFORM
+========================================================
+
+OVERVIEW:
+This document outlines all API requirements for the enhanced copy trading platform with community features, premium channels, subscription system, and real-time trading signals.
+
+BACKEND ARCHITECTURE:
+- Backend Main: Node.js + Express.js API Server
+- Database: PostgreSQL + Redis for caching
+- Smart Contracts: Aptos blockchain integration
+
+==================================================
+1. AUTHENTICATION & USER MANAGEMENT APIs
+==================================================
+
+USER AUTHENTICATION:
+- POST /api/auth/register - User registration
+- POST /api/auth/login - User login with JWT
+- POST /api/auth/logout - User logout
+- POST /api/auth/refresh - Refresh JWT token
+- POST /api/auth/forgot-password - Password reset request
+- POST /api/auth/reset-password - Password reset confirmation
+- GET /api/auth/verify-email - Email verification
+
+USER PROFILE:
+- GET /api/users/profile - Get user profile
+- PUT /api/users/profile - Update user profile
+- PUT /api/users/change-password - Change password
+- DELETE /api/users/account - Delete user account
+- GET /api/users/settings - Get user settings
+- PUT /api/users/settings - Update user settings
+
+==================================================
+2. TRADING & PORTFOLIO APIs
+==================================================
+
+PORTFOLIO MANAGEMENT:
+- GET /api/portfolio - Get user portfolio
+- GET /api/portfolio/history - Portfolio history
+- GET /api/portfolio/performance - Performance analytics
+- POST /api/portfolio/sync - Sync with exchange
+
+TRADING OPERATIONS:
+- POST /api/trades/execute - Execute trade manually
+- POST /api/trades/copy - Copy trade from signal
+- GET /api/trades/history - Trading history
+- GET /api/trades/active - Active positions
+- PUT /api/trades/modify - Modify existing trade
+- DELETE /api/trades/cancel - Cancel pending order
+
+EXCHANGE INTEGRATION:
+- GET /api/exchanges/supported - List supported exchanges
+- POST /api/exchanges/connect - Connect exchange API
+- GET /api/exchanges/balance - Get exchange balances
+- GET /api/exchanges/orders - Get exchange orders
+- POST /api/exchanges/withdraw - Initiate withdrawal
+
+==================================================
+3. MARKET DATA APIs
+==================================================
+
+REAL-TIME MARKET DATA:
+- GET /api/market/prices - Current prices for symbols
+- GET /api/market/charts - Chart data (OHLCV)
+- GET /api/market/orderbook - Order book data
+- GET /api/market/trades - Recent trades
+- WebSocket /ws/market - Real-time price updates
+
+MARKET ANALYSIS:
+- GET /api/market/trending - Trending assets
+- GET /api/market/gainers-losers - Top gainers/losers
+- GET /api/market/volume - Volume analysis
+- GET /api/market/sentiment - Market sentiment data
+- GET /api/market/news - Market news and events
+
+==================================================
+4. COMMUNITY & SOCIAL APIs
+==================================================
+
+COMMUNITY POSTS:
+- GET /api/community/posts - Get community posts (with pagination)
+- POST /api/community/posts - Create new post
+- GET /api/community/posts/:id - Get specific post
+- PUT /api/community/posts/:id - Update post (author only)
+- DELETE /api/community/posts/:id - Delete post (author only)
+
+POST INTERACTIONS:
+- POST /api/community/posts/:id/like - Like/unlike post
+- POST /api/community/posts/:id/comment - Add comment
+- GET /api/community/posts/:id/comments - Get post comments
+- DELETE /api/community/comments/:id - Delete comment
+- POST /api/community/posts/:id/share - Share post
+
+USER FOLLOWING:
+- POST /api/community/follow/:userId - Follow user
+- DELETE /api/community/unfollow/:userId - Unfollow user
+- GET /api/community/following - Get following list
+- GET /api/community/followers - Get followers list
+- GET /api/community/feed - Get personalized feed
+
+==================================================
+5. PREMIUM CHANNELS APIs
+==================================================
+
+CHANNEL MANAGEMENT:
+- GET /api/channels - Get all premium channels (with filters)
+- POST /api/channels - Create new channel (creators only)
+- GET /api/channels/:id - Get channel details
+- PUT /api/channels/:id - Update channel (owner only)
+- DELETE /api/channels/:id - Delete channel (owner only)
+
+CHANNEL CONTENT:
+- GET /api/channels/:id/posts - Get channel posts
+- POST /api/channels/:id/posts - Create channel post (owner only)
+- GET /api/channels/:id/signals - Get trading signals
+- POST /api/channels/:id/signals - Create trading signal (owner only)
+- GET /api/channels/:id/members - Get channel members
+
+CHANNEL DISCOVERY:
+- GET /api/channels/search - Search channels
+- GET /api/channels/categories - Get channel categories
+- GET /api/channels/trending - Get trending channels
+- GET /api/channels/recommended - Get recommended channels
+
+==================================================
+6. SUBSCRIPTION & PAYMENT APIs
+==================================================
+
+SUBSCRIPTION MANAGEMENT:
+- GET /api/subscriptions - Get user subscriptions
+- POST /api/subscriptions - Subscribe to channel
+- PUT /api/subscriptions/:id - Update subscription
+- DELETE /api/subscriptions/:id - Cancel subscription
+- GET /api/subscriptions/:id/status - Check subscription status
+
+PAYMENT PROCESSING:
+- POST /api/payments/process - Process payment
+- GET /api/payments/methods - Get payment methods
+- POST /api/payments/methods - Add payment method
+- PUT /api/payments/methods/:id - Update payment method
+- DELETE /api/payments/methods/:id - Remove payment method
+
+BILLING & INVOICING:
+- GET /api/billing/history - Get billing history
+- GET /api/billing/invoices - Get invoices
+- GET /api/billing/invoice/:id - Get specific invoice
+- POST /api/billing/refund - Request refund
+- GET /api/billing/analytics - Billing analytics (creators)
+
+==================================================
+7. TRADING SIGNALS APIs
+==================================================
+
+SIGNAL MANAGEMENT:
+- GET /api/signals - Get trading signals (with filters)
+- POST /api/signals - Create trading signal (premium users)
+- GET /api/signals/:id - Get signal details
+- PUT /api/signals/:id - Update signal (creator only)
+- DELETE /api/signals/:id - Delete signal (creator only)
+
+SIGNAL INTERACTIONS:
+- POST /api/signals/:id/copy - Copy trade from signal
+- POST /api/signals/:id/follow - Follow signal updates
+- GET /api/signals/:id/performance - Get signal performance
+- GET /api/signals/:id/followers - Get signal followers
+- POST /api/signals/:id/rating - Rate signal
+
+REAL-TIME SIGNALS:
+- WebSocket /ws/signals - Real-time signal updates
+- WebSocket /ws/signals/:channelId - Channel-specific signals
+- POST /api/signals/:id/alert - Set price alerts
+- GET /api/signals/alerts - Get user alerts
+
+==================================================
+8. ANALYTICS & REPORTING APIs
+==================================================
+
+USER ANALYTICS:
+- GET /api/analytics/performance - User performance metrics
+- GET /api/analytics/trades - Trade analytics
+- GET /api/analytics/roi - Return on investment data
+- GET /api/analytics/risk - Risk assessment
+- GET /api/analytics/comparison - Compare with benchmarks
+
+PLATFORM ANALYTICS:
+- GET /api/analytics/platform - Platform-wide statistics
+- GET /api/analytics/users - User growth metrics
+- GET /api/analytics/revenue - Revenue analytics
+- GET /api/analytics/engagement - Community engagement metrics
+- GET /api/analytics/signals - Signal performance analytics
+
+==================================================
+9. NOTIFICATION APIs
+==================================================
+
+NOTIFICATION MANAGEMENT:
+- GET /api/notifications - Get user notifications
+- POST /api/notifications/mark-read - Mark notifications as read
+- DELETE /api/notifications/:id - Delete notification
+- PUT /api/notifications/settings - Update notification preferences
+
+NOTIFICATION TYPES:
+- Trading alerts (price movements, signal updates)
+- Community notifications (likes, comments, follows)
+- Subscription notifications (renewals, cancellations)
+- Platform announcements
+- Security alerts
+
+PUSH NOTIFICATIONS:
+- POST /api/notifications/subscribe - Subscribe to push notifications
+- POST /api/notifications/send - Send notification (internal)
+- WebSocket /ws/notifications - Real-time notifications
+
+==================================================
+10. ADMIN & MODERATION APIs
+==================================================
+
+ADMIN MANAGEMENT:
+- GET /api/admin/users - Manage users
+- GET /api/admin/channels - Manage channels
+- GET /api/admin/posts - Manage posts
+- GET /api/admin/reports - Handle user reports
+- GET /api/admin/analytics - Admin analytics
+
+MODERATION:
+- POST /api/moderation/report - Report content
+- POST /api/moderation/review - Review reported content
+- POST /api/moderation/action - Take moderation action
+- GET /api/moderation/queue - Get moderation queue
+
+==================================================
+11. BLOCKCHAIN INTEGRATION APIs
+==================================================
+
+APTOS BLOCKCHAIN:
+- POST /api/blockchain/connect-wallet - Connect Aptos wallet
+- GET /api/blockchain/balance - Get APT balance
+- POST /api/blockchain/transaction - Execute blockchain transaction
+- GET /api/blockchain/transaction/:hash - Get transaction status
+- POST /api/blockchain/smart-contract - Interact with smart contracts
+
+CRYPTO PAYMENTS:
+- POST /api/crypto/payment - Process crypto payment
+- GET /api/crypto/rates - Get current crypto rates
+- POST /api/crypto/wallet - Manage crypto wallet
+- GET /api/crypto/transactions - Get crypto transaction history
+
+==================================================
+12. EXTERNAL API INTEGRATIONS
+==================================================
+
+MARKET DATA PROVIDERS:
+- CoinAPI.io integration for real-time prices
+- TradingView integration for charts
+- CoinGecko API for market data
+- News API for market news
+
+PAYMENT PROCESSORS:
+- Stripe for card payments
+- PayPal integration
+- Crypto payment gateways
+- Bank transfer APIs
+
+COMMUNICATION:
+- Email service (SendGrid/AWS SES)
+- SMS service (Twilio)
+- Push notification service
+- WebSocket server for real-time updates
+
+==================================================
+13. API SECURITY & RATE LIMITING
+==================================================
+
+SECURITY MEASURES:
+- JWT authentication for all protected endpoints
+- API rate limiting (per user/IP)
+- Input validation and sanitization
+- SQL injection prevention
+- CORS configuration
+- API versioning (/api/v1/)
+
+RATE LIMITS:
+- Authentication: 5 requests/minute
+- Trading operations: 10 requests/minute
+- Market data: 100 requests/minute
+- Community posts: 20 requests/hour
+- General API: 1000 requests/hour
+
+==================================================
+14. ERROR HANDLING & RESPONSES
+==================================================
+
+STANDARD RESPONSE FORMAT:
+{
+  "success": boolean,
+  "data": object|array|null,
+  "message": string,
+  "error": object|null,
+  "timestamp": string,
+  "requestId": string
+}
+
+HTTP STATUS CODES:
+- 200: Success
+- 201: Created
+- 400: Bad Request
+- 401: Unauthorized
+- 403: Forbidden
+- 404: Not Found
+- 429: Rate Limited
+- 500: Internal Server Error
+
+==================================================
+15. API DOCUMENTATION & TESTING
+==================================================
+
+DOCUMENTATION:
+- Swagger/OpenAPI documentation
+- Postman collection
+- API usage examples
+- Authentication guide
+- Rate limiting documentation
+
+TESTING:
+- Unit tests for all endpoints
+- Integration tests
+- Load testing
+- Security testing
+- API monitoring and logging
+
+This comprehensive API structure supports all features of the enhanced copy trading platform including community features, premium channels, subscription system, real-time trading signals, and payment processing.
+
+==================================================
+16. EXTERNAL APIs YOU CAN USE - COMPLETE LIST
+==================================================
+
+CRYPTOCURRENCY MARKET DATA APIs:
+==================================================
+
+PRIMARY MARKET DATA:
+- CoinAPI.io (coinapi.io) - Professional crypto data, real-time prices, historical data
+- CoinGecko API (coingecko.com/api) - Free tier available, comprehensive market data
+- CoinMarketCap API (coinmarketcap.com/api) - Popular crypto data provider
+- Binance API (binance-docs.github.io) - Direct exchange data, high frequency
+- Coinbase Pro API (docs.cloud.coinbase.com) - Professional trading data
+- Kraken API (docs.kraken.com) - Reliable European exchange data
+- KuCoin API (docs.kucoin.com) - Global exchange with good API coverage
+
+ADVANCED MARKET DATA:
+- Messari API (messari.io/api) - On-chain metrics and fundamental data
+- CryptoCompare API (cryptocompare.com/api) - Historical data and social metrics
+- Nomics API (nomics.com/docs) - Transparent cryptocurrency market data
+- Twelve Data API (twelvedata.com) - Crypto and traditional market data
+- Alpha Vantage API (alphavantage.co) - Technical indicators and market data
+- IEX Cloud API (iexcloud.io) - Financial data including crypto
+- Polygon.io API (polygon.io) - Real-time and historical market data
+
+DERIVATIVES & FUTURES:
+- Deribit API (docs.deribit.com) - Crypto derivatives and options
+- FTX API (docs.ftx.com) - Derivatives and spot trading
+- ByBit API (bybit-exchange.github.io) - Perpetual contracts data
+- BitMEX API (testnet.bitmex.com/api) - Bitcoin derivatives
+
+EXCHANGE INTEGRATION APIs:
+==================================================
+
+MAJOR EXCHANGES:
+- Binance API (binance-docs.github.io/apidocs) - World's largest crypto exchange
+- Coinbase Pro API (docs.cloud.coinbase.com) - US-based professional exchange
+- Kraken API (docs.kraken.com/rest) - European exchange with advanced features
+- KuCoin API (docs.kucoin.com) - Global exchange with futures
+- Huobi API (huobiapi.github.io) - Asian exchange with global reach
+- OKX API (okx.com/docs-v5) - Comprehensive trading platform
+- Gate.io API (gate.io/docs/developers) - Wide range of altcoins
+
+DECENTRALIZED EXCHANGES (DEX):
+- Uniswap Subgraph API (thegraph.com/docs) - DEX data from The Graph
+- PancakeSwap API (docs.pancakeswap.finance) - BSC-based DEX
+- SushiSwap API (dev.sushi.com) - Multi-chain DEX protocol
+- 1inch API (docs.1inch.io) - DEX aggregator
+- 0x API (0x.org/docs/api) - Decentralized exchange infrastructure
+
+PORTFOLIO TRACKING APIs:
+- Zapper API (docs.zapper.fi) - DeFi portfolio tracking
+- DeBank API (docs.cloud.debank.com) - Multi-chain portfolio
+- Zerion API (developers.zerion.io) - DeFi portfolio management
+
+PAYMENT PROCESSING APIs:
+==================================================
+
+TRADITIONAL PAYMENTS:
+- Stripe API (stripe.com/docs/api) - Credit/debit card processing
+- PayPal API (developer.paypal.com) - Global payment platform
+- Square API (developer.squareup.com) - Payment processing and POS
+- Razorpay API (razorpay.com/docs) - Indian payment gateway
+- Adyen API (docs.adyen.com) - Global payment platform
+- Klarna API (docs.klarna.com) - Buy now, pay later
+- Apple Pay API (developer.apple.com/apple-pay) - Mobile payments
+- Google Pay API (developers.google.com/pay) - Mobile payments
+
+CRYPTOCURRENCY PAYMENTS:
+- BitPay API (bitpay.com/api) - Bitcoin payment processor
+- CoinPayments API (coinpayments.net/apidoc) - Multi-crypto payment gateway
+- NOWPayments API (nowpayments.io/api) - 100+ cryptocurrencies
+- CoinGate API (developer.coingate.com) - Crypto payment gateway
+- Coinbase Commerce API (commerce.coinbase.com/docs) - Crypto payments
+- BTCPay Server API (docs.btcpayserver.org) - Self-hosted crypto payments
+
+BLOCKCHAIN INFRASTRUCTURE APIs:
+==================================================
+
+APTOS BLOCKCHAIN:
+- Aptos Node API (fullnode.devnet.aptoslabs.com) - Direct blockchain interaction
+- Aptos Labs API (aptos.dev/guides) - Official development resources
+- Hippo Labs API (hippo.space) - Aptos ecosystem data
+- Pontem Network API (pontem.network) - Move language development
+
+MULTI-CHAIN APIS:
+- Alchemy API (alchemy.com) - Ethereum, Polygon, Arbitrum blockchain data
+- Infura API (infura.io) - Ethereum and IPFS infrastructure
+- Moralis API (moralis.io) - Multi-chain Web3 development
+- QuickNode API (quicknode.com) - Multi-blockchain infrastructure
+- Ankr API (ankr.com) - Multi-chain node infrastructure
+- GetBlock API (getblock.io) - Blockchain node API access
+
+ETHEREUM ECOSYSTEM:
+- Etherscan API (etherscan.io/apis) - Ethereum blockchain explorer
+- The Graph API (thegraph.com) - Blockchain data indexing
+- Covalent API (covalenthq.com) - Multi-blockchain data
+- DeFiPulse API (defipulse.com/api) - DeFi protocols data
+
+NEWS & SENTIMENT APIs:
+==================================================
+
+CRYPTO NEWS:
+- CryptoPanic API (cryptopanic.com/developers/api) - Crypto news aggregator
+- CoinTelegraph API (cointelegraph.com/api) - Crypto news and analysis
+- CoinDesk API (coindesk.com/api) - Leading crypto news source
+- NewsBTC API (newsbtc.com/api) - Bitcoin and crypto news
+- Decrypt API (decrypt.co/api) - Web3 and crypto news
+
+GENERAL NEWS:
+- NewsAPI (newsapi.org) - Global news articles
+- Guardian API (open-platform.theguardian.com) - UK news source
+- Reddit API (reddit.com/dev/api) - Social media sentiment
+- Twitter API v2 (developer.twitter.com) - Social media data
+
+MARKET SENTIMENT:
+- Fear & Greed Index API (alternative.me/crypto/fear-and-greed-index) - Market sentiment
+- Santiment API (santiment.net) - On-chain and social metrics
+- LunarCrush API (lunarcrush.com/developers) - Social sentiment analysis
+- TheTie API (thetie.io) - Crypto social sentiment
+
+TECHNICAL ANALYSIS APIs:
+==================================================
+
+CHARTING & INDICATORS:
+- TradingView API (tradingview.com/charting-library) - Advanced charting
+- Taapi.io API (taapi.io) - Technical indicators as a service
+- Alpha Vantage Technical Indicators (alphavantage.co) - Stock and crypto indicators
+- Quandl API (quandl.com/tools/api) - Financial and economic data
+
+TRADING SIGNALS:
+- TradingView Pine Script (tradingview.com/pine-script-docs) - Custom indicators
+- QuantConnect API (quantconnect.com) - Algorithmic trading platform
+- Backtrader (backtrader.com) - Python trading framework
+- Zipline API (zipline.io) - Algorithmic trading library
+
+COMMUNICATION APIs:
+==================================================
+
+EMAIL SERVICES:
+- SendGrid API (sendgrid.com/docs/api) - Email delivery platform
+- Mailgun API (mailgun.com/developers) - Email automation
+- Amazon SES API (aws.amazon.com/ses) - AWS email service
+- Mailchimp API (mailchimp.com/developer) - Email marketing
+- Postmark API (postmarkapp.com/developer) - Transactional email
+
+SMS SERVICES:
+- Twilio API (twilio.com/docs/api) - SMS and communication platform
+- Nexmo API (developer.vonage.com) - SMS and voice API
+- AWS SNS API (aws.amazon.com/sns) - Push notifications and SMS
+- MessageBird API (developers.messagebird.com) - Communication platform
+
+PUSH NOTIFICATIONS:
+- Firebase Cloud Messaging (firebase.google.com/docs/cloud-messaging) - Push notifications
+- OneSignal API (documentation.onesignal.com) - Multi-platform push notifications
+- Pusher API (pusher.com/docs) - Real-time communication
+- Socket.io (socket.io/docs) - Real-time bidirectional communication
+
+AUTHENTICATION & SECURITY APIs:
+==================================================
+
+AUTHENTICATION:
+- Auth0 API (auth0.com/docs/api) - Identity and access management
+- Firebase Auth API (firebase.google.com/docs/auth) - User authentication
+- Amazon Cognito API (aws.amazon.com/cognito) - User identity service
+- Okta API (developer.okta.com) - Identity and access management
+
+KYC/AML SERVICES:
+- Jumio API (jumio.com/api) - Identity verification
+- Onfido API (onfido.com/api) - Identity verification
+- Shufti Pro API (shuftipro.com/api) - KYC and AML compliance
+- Sumsub API (sumsub.com/api-docs) - Identity verification platform
+
+SECURITY:
+- reCAPTCHA API (developers.google.com/recaptcha) - Bot protection
+- hCaptcha API (docs.hcaptcha.com) - Anti-bot service
+- Cloudflare API (api.cloudflare.com) - Security and performance
+
+ANALYTICS & MONITORING APIs:
+==================================================
+
+ANALYTICS:
+- Google Analytics API (developers.google.com/analytics) - Web analytics
+- Mixpanel API (developer.mixpanel.com) - Event analytics
+- Amplitude API (developers.amplitude.com) - Product analytics
+- Segment API (segment.com/docs/api) - Customer data platform
+
+MONITORING:
+- Sentry API (docs.sentry.io/api) - Error tracking and monitoring
+- DataDog API (docs.datadoghq.com/api) - Infrastructure monitoring
+- New Relic API (docs.newrelic.com/docs/apis) - Application performance monitoring
+- Pingdom API (docs.pingdom.com) - Website monitoring
+
+FILE STORAGE & CDN APIs:
+==================================================
+
+CLOUD STORAGE:
+- Amazon S3 API (aws.amazon.com/s3) - Object storage service
+- Google Cloud Storage API (cloud.google.com/storage/docs/apis) - Cloud storage
+- Microsoft Azure Blob API (docs.microsoft.com/azure/storage) - Cloud storage
+- Cloudinary API (cloudinary.com/documentation/api) - Image and video management
+
+CDN SERVICES:
+- Cloudflare API (api.cloudflare.com) - Content delivery network
+- AWS CloudFront API (aws.amazon.com/cloudfront) - Global CDN
+- MaxCDN API (maxcdn.com/api) - Content delivery network
+
+ARTIFICIAL INTELLIGENCE APIs:
+==================================================
+
+NATURAL LANGUAGE PROCESSING:
+- OpenAI API (openai.com/api) - GPT models for text generation
+- Hugging Face API (huggingface.co/docs/api-inference) - Pre-trained ML models
+- Google Cloud Natural Language API (cloud.google.com/natural-language) - Text analysis
+- AWS Comprehend API (aws.amazon.com/comprehend) - Natural language processing
+- IBM Watson API (cloud.ibm.com/docs/watson) - AI services
+
+MACHINE LEARNING:
+- Google Cloud AI Platform (cloud.google.com/ai-platform) - ML model deployment
+- AWS SageMaker API (aws.amazon.com/sagemaker) - Machine learning platform
+- Azure Machine Learning API (azure.microsoft.com/services/machine-learning) - ML service
+
+REGULATORY & COMPLIANCE APIs:
+==================================================
+
+TAX CALCULATION:
+- TaxJar API (taxjar.com/api) - Sales tax calculation
+- Avalara API (developer.avalara.com) - Tax compliance
+- TaxCloud API (taxcloud.com/api) - Tax calculation service
+
+COMPLIANCE:
+- ComplyAdvantage API (complyadvantage.com/api) - AML and sanctions screening
+- Thomson Reuters World-Check API (risk.thomsonreuters.com) - Risk intelligence
+- Dow Jones Risk API (risk.dowjones.com) - Risk and compliance data
+
+GEOLOCATION & MAPPING APIs:
+==================================================
+
+MAPPING:
+- Google Maps API (developers.google.com/maps) - Mapping and geolocation
+- Mapbox API (docs.mapbox.com/api) - Customizable maps
+- OpenStreetMap API (wiki.openstreetmap.org/wiki/API) - Open source mapping
+
+GEOLOCATION:
+- IP Geolocation API (ipgeolocation.io) - IP-based location detection
+- MaxMind GeoIP API (dev.maxmind.com/geoip) - IP geolocation service
+
+MISCELLANEOUS USEFUL APIs:
+==================================================
+
+TIME & DATE:
+- World Time API (worldtimeapi.org) - Time zone information
+- TimeZoneDB API (timezonedb.com/api) - Time zone data
+
+CURRENCY CONVERSION:
+- Fixer.io API (fixer.io) - Foreign exchange rates
+- CurrencyAPI (currencyapi.com) - Real-time exchange rates
+- ExchangeRate-API (exchangerate-api.com) - Currency conversion
+
+QR CODE GENERATION:
+- QR Server API (goqr.me/api) - QR code generation
+- QRCode Monkey API (qrcode-monkey.com/api) - Custom QR codes
+
+URL SHORTENING:
+- Bitly API (dev.bitly.com) - URL shortening and analytics
+- TinyURL API (tinyurl.com/app/dev) - Simple URL shortening
+
+==================================================
+API INTEGRATION RECOMMENDATIONS:
+==================================================
+
+PRIORITY 1 (ESSENTIAL):
+1. CoinGecko API - Free crypto market data
+2. Binance API - Exchange integration
+3. Stripe API - Payment processing
+4. SendGrid API - Email notifications
+5. Firebase Auth - User authentication
+
+PRIORITY 2 (IMPORTANT):
+6. TradingView API - Advanced charting
+7. Twilio API - SMS notifications
+8. Redis - Caching and sessions
+9. Socket.io - Real-time updates
+10. AWS S3 - File storage
+
+PRIORITY 3 (ENHANCED FEATURES):
+11. OpenAI API - AI-powered insights
+12. Sentiment analysis APIs
+13. Social media APIs (Twitter, Reddit)
+14. Advanced analytics APIs
+15. Compliance and KYC APIs
+
+FREE TIER RECOMMENDATIONS:
+- CoinGecko API (50 requests/minute free)
+- NewsAPI (1000 requests/day free)
+- Alpha Vantage (5 API requests/minute free)
+- Firebase (generous free tier)
+- Vercel/Netlify (free hosting with limits)
+
+This comprehensive list provides you with all the external APIs needed to build a world-class copy trading platform with advanced features and integrations.
