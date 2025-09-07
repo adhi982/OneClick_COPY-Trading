@@ -1,19 +1,19 @@
 import { DashboardLayout } from "@/components/dashboard/DashboardLayout"
-import { PortfolioOverview } from "@/components/dashboard/PortfolioOverview"
+import { RealTimePortfolioOverview } from "@/components/dashboard/RealTimePortfolioOverview"
 import { TopTraders } from "@/components/dashboard/TopTraders"
-import { MarketOverview } from "@/components/dashboard/MarketOverview"
+import { MarketDataDashboard } from "@/components/dashboard/MarketDataDashboard"
 
 export default function DashboardPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        {/* Portfolio Overview */}
-        <PortfolioOverview />
+        {/* Real-Time Portfolio Overview */}
+        <RealTimePortfolioOverview />
 
-        {/* Market Overview */}
-        <MarketOverview />
+        {/* Real-Time Market Overview */}
+        <MarketDataDashboard />
 
-        {/* Main Content */}
+        {/* Top Traders */}
         <TopTraders />
       </div>
     </DashboardLayout>

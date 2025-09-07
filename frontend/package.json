@@ -9,6 +9,8 @@
     "start": "next start"
   },
   "dependencies": {
+    "@aptos-labs/ts-sdk": "^4.0.0",
+    "@aptos-labs/wallet-adapter-react": "^7.0.4",
     "@headlessui/react": "^2.2.7",
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "1.2.2",
@@ -59,6 +61,7 @@
     "react-hook-form": "^7.60.0",
     "react-resizable-panels": "^2.1.7",
     "recharts": "2.15.4",
+    "socket.io-client": "^4.8.1",
     "sonner": "^1.7.4",
     "svelte": "latest",
     "tailwind-merge": "^2.5.5",

@@ -52,12 +52,14 @@ module copy_trading::main {
     }
 
     // Events
+    #[event]
     struct VaultCreatedEvent has drop, store {
         user_address: address,
         initial_balance: u64,
         timestamp: u64,
     }
 
+    #[event]
     struct TradeExecutedEvent has drop, store {
         trader_address: address,
         follower_address: address,
@@ -67,6 +69,7 @@ module copy_trading::main {
         timestamp: u64,
     }
 
+    #[event]
     struct TraderRegisteredEvent has drop, store {
         trader_address: address,
         performance_fee: u8,

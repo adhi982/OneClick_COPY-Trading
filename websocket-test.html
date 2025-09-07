@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .connected { background-color: #d4edda; color: #155724; }
+        .disconnected { background-color: #f8d7da; color: #721c24; }
+        .log { background-color: #f1f1f1; padding: 10px; height: 300px; overflow-y: scroll; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🔗 OneClick Copy Trading - WebSocket Test</h1>
+    
+    <div id="status" class="status disconnected">❌ Disconnected</div>
+    
+    <button onclick="connect()">Connect</button>
+    <button onclick="disconnect()">Disconnect</button>
+    <button onclick="clearLog()">Clear Log</button>
+    
+    <h3>📊 Connection Log:</h3>
+    <div id="log" class="log"></div>
+
+    <script src="https://cdn.socket.io/4.8.0/socket.io.min.js"></script>
+    <script>
+        let socket = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+        
+        function updateStatus(connected) {
+            const statusDiv = document.getElementById('status');
+            if (connected) {
+                statusDiv.className = 'status connected';
+                statusDiv.textContent = '✅ Connected to OneClick Backend';
+            } else {
+                statusDiv.className = 'status disconnected';
+                statusDiv.textContent = '❌ Disconnected from Backend';
+            }
+        }
+        
+        function connect() {
+            if (socket) {
+                log('⚠️ Already connected');
+                return;
+            }
+            
+            log('🔗 Connecting to http://localhost:3001...');
+            
+            socket = io('http://localhost:3001', {
+                transports: ['websocket', 'polling'],
+                timeout: 10000
+            });
+            
+            socket.on('connect', () => {
+                log('✅ Connected! Socket ID: ' + socket.id);
+                updateStatus(true);
+                
+                // Test subscription
+                socket.emit('subscribe_trader', { traderWallet: 'test_trader_123' });
+                log('📊 Subscribed to test trader');
+            });
+            
+            socket.on('disconnect', (reason) => {
+                log('🔌 Disconnected: ' + reason);
+                updateStatus(false);
+                socket = null;
+            });
+            
+            socket.on('connect_error', (error) => {
+                log('❌ Connection error: ' + error.message);
+                updateStatus(false);
+            });
+            
+            socket.on('error', (error) => {
+                log('❌ Socket error: ' + error);
+            });
+        }
+        
+        function disconnect() {
+            if (socket) {
+                socket.disconnect();
+                socket = null;
+                log('🔌 Manually disconnected');
+                updateStatus(false);
+            } else {
+                log('⚠️ Not connected');
+            }
+        }
+        
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+        
+        // Auto-connect on page load
+        window.onload = function() {
+            log('🚀 WebSocket Test Page Loaded');
+            connect();
+        };
+    </script>
+</body>
+</html>

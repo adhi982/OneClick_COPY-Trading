@@ -15,6 +15,9 @@ module copy_trading::risk_manager {
     const E_UNVERIFIED_TRADER: u64 = 6;
     const E_INVALID_SYMBOL: u64 = 7;
 
+    // Constants
+    const MAX_POSITION_VALUE: u64 = 1000000; // 1M units max position
+
     struct RiskParameters has key {
         max_position_count: u8,
         max_daily_loss_percentage: u8,
@@ -64,7 +67,7 @@ module copy_trading::risk_manager {
 
     // Initialize global risk parameters (admin only)
     fun init_module(admin: &signer) {
-        let params = RiskParameters {
+        let mut_params = RiskParameters {
             max_position_count: 20,
             max_daily_loss_percentage: 20, // 20%
             max_single_position_percentage: 10, // 10%
@@ -73,14 +76,15 @@ module copy_trading::risk_manager {
             blacklisted_traders: vector::empty(),
             last_updated: timestamp::now_seconds(),
         };
-        move_to(admin, params);
 
         // Add some default allowed trading pairs
-        let symbols = &mut params.allowed_symbols;
+        let symbols = &mut mut_params.allowed_symbols;
         vector::push_back(symbols, b"APT/USDC");
         vector::push_back(symbols, b"BTC/USDC");
         vector::push_back(symbols, b"ETH/USDC");
         vector::push_back(symbols, b"SOL/USDC");
+        
+        move_to(admin, mut_params);
     }
 
     // Create user risk profile
@@ -349,8 +353,30 @@ module copy_trading::risk_manager {
         let account_value_threshold = vault_balance / 2;
         
         (user_profile.daily_loss_so_far >= daily_loss_threshold) ||
-        (total_pnl < -((account_value_threshold as i64))) ||
+        (total_pnl < account_value_threshold) ||
         (position_count >= (user_profile.max_positions as u64))
+    }
+
+    // Check if position is at risk
+    public fun is_position_at_risk(
+        user_addr: address,
+        position_value: u64,
+        total_pnl: u64,
+        account_value_threshold: u64
+    ): bool acquires UserRiskProfile {
+        // Check if position is at risk based on multiple criteria
+        (total_pnl < account_value_threshold) ||
+        (position_value > MAX_POSITION_VALUE) ||
+        is_daily_loss_limit_exceeded(user_addr)
+    }
+
+    // Add the missing function
+    fun is_daily_loss_limit_exceeded(user_addr: address): bool acquires UserRiskProfile {
+        if (!exists<UserRiskProfile>(user_addr)) {
+            return false
+        };
+        let user_profile = borrow_global<UserRiskProfile>(user_addr);
+        user_profile.daily_loss_so_far >= user_profile.max_daily_loss
     }
 
     // Helper functions

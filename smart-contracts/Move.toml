@@ -1,15 +1,29 @@
 [package]
-name = "copy_trading"
+name = "OneClickCopyTrading"
 version = "1.0.0"
-upgrade_policy = "compatible"
+authors = ["OneClick Team"]
 
 [addresses]
-copy_trading = "_"
+copy_trading = "0x84f085ed525338169913c521f1a051caab262bd010d38d55869232ddede92260"
+std = "0x1"
+aptos_framework = "0x1"
+aptos_std = "0x1"
 
-[dev-addresses]
-copy_trading = "_"
 
-[dependencies]
-AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework", rev = "main" }
+
+[dependencies.AptosFramework]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "aptos-cli-v4.2.5"
+subdir = "aptos-move/framework/aptos-framework"
+
+[dependencies.AptosStdlib]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "aptos-cli-v4.2.5"
+subdir = "aptos-move/framework/aptos-stdlib"
+
+[dependencies.MoveStdlib]
+git = "https://github.com/aptos-labs/aptos-core.git"
+rev = "aptos-cli-v4.2.5"
+subdir = "aptos-move/framework/move-stdlib"
 
 [dev-dependencies]

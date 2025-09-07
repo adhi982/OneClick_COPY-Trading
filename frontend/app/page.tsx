@@ -35,6 +35,12 @@ export default function LandingPage() {
             >
               Analytics
             </Link>
+            <Link
+              href="/test-contract"
+              className="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+            >
+              Test Contract
+            </Link>
           </nav>
           <Button asChild>
             <Link href="/dashboard">Connect Wallet & Start Trading</Link>

@@ -5,6 +5,7 @@ module copy_trading::trader_registry {
     use std::string::{Self, String};
     use aptos_framework::timestamp;
     use aptos_framework::event;
+    use aptos_std::table::{Self, Table};
 
     // Error codes
     const E_NOT_AUTHORIZED: u64 = 1;
@@ -12,14 +13,16 @@ module copy_trading::trader_registry {
     const E_ALREADY_REGISTERED: u64 = 3;
     const E_INVALID_FEE: u64 = 4;
     const E_INVALID_RATING: u64 = 5;
+    const E_REGISTRY_NOT_EXISTS: u64 = 6;
 
     struct TraderRegistry has key {
         admin: address,
         verified_traders: vector<address>,
         total_registered: u64,
+        traders: Table<address, TraderProfile>,
     }
 
-    struct TraderProfile has key {
+    struct TraderProfile has key, store {
         trader_address: address,
         is_verified: bool,
         is_active: bool,
@@ -39,7 +42,7 @@ module copy_trading::trader_registry {
         
         // Risk metrics
         max_drawdown: u64,
-        average_return: i64,
+        average_return: u64, // Changed from i64 to u64
         sharpe_ratio: u64,
         risk_score: u8, // 1-10 (1 = very safe, 10 = very risky)
         
@@ -50,8 +53,8 @@ module copy_trading::trader_registry {
     }
 
     struct TraderStats has store {
-        daily_returns: vector<i64>,
-        monthly_returns: vector<i64>,
+        daily_returns: vector<u64>,
+        monthly_returns: vector<u64>,
         trade_history: vector<TradeRecord>,
         last_updated: u64,
     }
@@ -61,13 +64,14 @@ module copy_trading::trader_registry {
         amount: u64,
         entry_price: u64,
         exit_price: u64,
-        pnl: i64,
+        pnl: u64, // Changed from i64 to u64
         is_long: bool,
         duration: u64,
         timestamp: u64,
     }
 
     // Events
+    #[event]
     struct TraderRegisteredEvent has drop, store {
         trader_address: address,
         display_name: String,
@@ -75,12 +79,14 @@ module copy_trading::trader_registry {
         timestamp: u64,
     }
 
+    #[event]
     struct TraderVerifiedEvent has drop, store {
         trader_address: address,
         admin_address: address,
         timestamp: u64,
     }
 
+    #[event]
     struct TraderStatsUpdatedEvent has drop, store {
         trader_address: address,
         win_rate: u64,
@@ -95,6 +101,7 @@ module copy_trading::trader_registry {
             admin: signer::address_of(admin),
             verified_traders: vector::empty(),
             total_registered: 0,
+            traders: table::new(),
         };
         move_to(admin, registry);
     }
@@ -185,7 +192,7 @@ module copy_trading::trader_registry {
         winning_trades: u64,
         losing_trades: u64,
         max_drawdown: u64,
-        average_return: i64,
+        average_return: u64, // Changed from i64 to u64
         risk_score: u8
     ) acquires TraderProfile {
         assert!(exists<TraderProfile>(trader_address), error::not_found(E_TRADER_NOT_FOUND));
@@ -217,30 +224,31 @@ module copy_trading::trader_registry {
     // Update follower count and AUM
     public fun update_trader_followers(
         trader_address: address,
-        follower_change: i64,
-        aum_change: i64
+        follower_change: u64,
+        aum_change: u64
     ) acquires TraderProfile {
         assert!(exists<TraderProfile>(trader_address), error::not_found(E_TRADER_NOT_FOUND));
 
         let profile = borrow_global_mut<TraderProfile>(trader_address);
         
         // Update followers
-        if (follower_change >= 0) {
-            profile.total_followers = profile.total_followers + (follower_change as u64);
-        } else {
-            let decrease = (-follower_change as u64);
-            if (decrease <= profile.total_followers) {
+        if (follower_change < 0) {
+            // let decrease = (-follower_change as u64);  // Old syntax
+            let decrease = ((0 - follower_change) as u64);  // Fixed syntax
+            if (profile.total_followers >= decrease) {
                 profile.total_followers = profile.total_followers - decrease;
             } else {
                 profile.total_followers = 0;
             };
+        } else {
+            profile.total_followers = profile.total_followers + (follower_change as u64);
         };
 
         // Update AUM
         if (aum_change >= 0) {
             profile.total_aum = profile.total_aum + (aum_change as u64);
         } else {
-            let decrease = (-aum_change as u64);
+            let decrease = (aum_change as u64);
             if (decrease <= profile.total_aum) {
                 profile.total_aum = profile.total_aum - decrease;
             } else {
@@ -329,7 +337,7 @@ module copy_trading::trader_registry {
     }
 
     #[view]
-    public fun get_trader_stats(trader_address: address): (u64, u64, u64, u64, i64, u8) acquires TraderProfile {
+    public fun get_trader_stats(trader_address: address): (u64, u64, u64, u64, u64, u8) acquires TraderProfile {
         assert!(exists<TraderProfile>(trader_address), error::not_found(E_TRADER_NOT_FOUND));
         let profile = borrow_global<TraderProfile>(trader_address);
         (
@@ -357,5 +365,26 @@ module copy_trading::trader_registry {
     #[view]
     public fun trader_exists(trader_address: address): bool {
         exists<TraderProfile>(trader_address)
+    }
+
+    public fun update_follower_count(
+        trader_addr: address,
+        is_increase: bool,
+        change_amount: u64
+    ) acquires TraderRegistry {
+        assert!(exists<TraderRegistry>(@copy_trading), E_REGISTRY_NOT_EXISTS);
+        let registry = borrow_global_mut<TraderRegistry>(@copy_trading);
+        
+        let trader = table::borrow_mut(&mut registry.traders, trader_addr);
+        
+        if (is_increase) {
+            trader.total_followers = trader.total_followers + change_amount;
+        } else {
+            if (trader.total_followers >= change_amount) {
+                trader.total_followers = trader.total_followers - change_amount;
+            } else {
+                trader.total_followers = 0;
+            };
+        };
     }
 }
