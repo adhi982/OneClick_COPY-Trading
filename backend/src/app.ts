@@ -1,9 +1,12 @@
+// Configure dotenv to load environment variables FIRST
+import dotenv from 'dotenv';
+dotenv.config({ path: '.env' });
+
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import dotenv from 'dotenv';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 
@@ -15,6 +18,8 @@ import marketRoutes from './routes/market.routes';
 import communityRoutes from './routes/community.routes';
 import realtimeRoutes from './routes/realtime.routes';
 import copyTradingRoutes from './routes/copy-trading.routes';
+import analyticsRoutes from './routes/analytics';
+import kanaLabsRoutes from './routes/kana-labs.routes';
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler';
@@ -23,9 +28,7 @@ import { logger } from './utils/logger';
 // Import services
 import { AptosService } from './services/aptos.service';
 import { unifiedMarketDataService } from './services/unified-market-data.service';
-// import { KanaLabsIntegrationService } from './services/kana-labs-integration.service';
-
-dotenv.config();
+import { KanaLabsIntegrationService } from './services/kana-labs-integration.service';
 
 // Initialize services
 AptosService.initialize();
@@ -125,6 +128,7 @@ const io = new Server(server, {
 });
 
 const PORT = process.env.PORT || 5001;
+console.log('🔍 Starting server with PORT:', PORT);
 
 // Security middleware
 app.use(helmet());
@@ -180,6 +184,9 @@ app.use('/api/market', marketRoutes);
 app.use('/api/community', communityRoutes);
 app.use('/api/realtime', realtimeRoutes);
 app.use('/api/copy-trading', copyTradingRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/kana-labs', kanaLabsRoutes);
+// Analytics routes properly loaded
 
 // Socket.IO connection handling
 io.on('connection', (socket) => {
@@ -297,8 +304,8 @@ setInterval(async () => {
   console.log('📊 Trader performance update broadcasted');
 }, 15000);
 
-// Initialize Kana Labs service (disabled until API key is provided)
-// KanaLabsIntegrationService.getInstance().initialize().catch(console.error);
+// Initialize Kana Labs service (enabled with real API key)
+KanaLabsIntegrationService.getInstance().initialize().catch(console.error);
 
 // Error handling middleware
 app.use(errorHandler);
@@ -308,10 +315,15 @@ app.use('*', (_req, res) => {
    res.status(404).json({ error: 'Route not found' });
 });
 
-server.listen(PORT, () => {
+server.listen(Number(PORT), '127.0.0.1', () => {
+   console.log(`✅ Server successfully bound to 127.0.0.1:${PORT}`);
    logger.info(`🚀 Server running on port ${PORT}`);
    logger.info(`🌐 Environment: ${process.env.NODE_ENV || 'development'}`);
    logger.info(`🔗 Socket.IO enabled for real-time features`);
+}).on('error', (err) => {
+   logger.error(`❌ Server failed to start: ${err.message}`);
+   console.error('❌ Server startup error:', err);
+   process.exit(1);
 });
 
 export default app;

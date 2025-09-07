@@ -1,56 +1,32 @@
-# Logs
-logs
-*.log
+# ==============================================
+# OneClick Copy-Trading Platform - .gitignore
+# ==============================================
+
+# ==================
+# NODE.JS & NPM
+# ==================
+# Dependencies
+node_modules/
+*/node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 lerna-debug.log*
 
-# Dependency directories
-node_modules/
-jspm_packages/
+# Package manager lock files (keep package-lock.json but ignore others if switching)
+# Uncomment the one you're NOT using:
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
 
-# TypeScript cache
-*.tsbuildinfo
-
-# Optional npm cache directory
+# NPM cache
 .npm
-
-# Optional eslint cache
-.eslintcache
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# parcel-bundler cache (https://parceljs.org/)
-.cache
-.parcel-cache
-
-# Next.js build output
-.next
-out
-
-# Nuxt.js build / generate output
-.nuxt
-dist
-
-# Storybook build outputs
-.out
-.storybook-out
-
-# Temporary folders
-tmp/
-temp/
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
 
 # Runtime data
 pids
@@ -58,156 +34,285 @@ pids
 *.seed
 *.pid.lock
 
-# Coverage directory used by tools like istanbul
-coverage/
-*.lcov
-
-# nyc test coverage
-.nyc_output
-
-# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
-.grunt
-
-# Bower dependency directory (https://bower.io/)
-bower_components
-
-# node-waf configuration
-.lock-wscript
-
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
-
-# Dependency directories
-node_modules/
-jspm_packages/
-
-# Snowpack dependency directory (https://snowpack.dev/)
-web_modules/
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
-
-# Optional REPL history
-.node_repl_history
-
-# Output of 'npm pack'
-*.tgz
-
-# Yarn Integrity file
-.yarn-integrity
-
-# dotenv environment variables file
+# ==================
+# ENVIRONMENT & CONFIG
+# ==================
+# Environment variables (CRITICAL - Contains API keys!)
 .env
-.env.test
-.env.production
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging
 
-# parcel-bundler cache (https://parceljs.org/)
+# Backup environment files
+.env.backup
+.env.bak
+*.env.bak
+
+# Configuration backups
+config/*.local.js
+config/*.local.json
+
+# ==================
+# BUILD OUTPUTS
+# ==================
+# Next.js (Frontend)
+.next/
+out/
+
+# TypeScript
+*.tsbuildinfo
+dist/
+build/
+
+# Webpack/Vite
+dist-ssr/
+*.local
+
+# Nuxt.js
+.nuxt
+
+# Parcel
 .cache
 .parcel-cache
 
-# Stores VSCode versions used for testing VSCode extensions
-.vscode-test
+# Rollup
+dist/
 
-# yarn v2
-.yarn/cache
-.yarn/unplugged
-.yarn/build-state.yml
-.yarn/install-state.gz
-.pnp.*
+# ==================
+# LOGS & DEBUGGING
+# ==================
+# Application logs
+logs/
+*.log
+backend/logs/*.log
+*.log.*
 
-# Database
-*.db
+# Debug files
+debug/
+*.debug
+
+# Coverage reports
+coverage/
+*.lcov
+.nyc_output
+
+# ==================
+# TESTING
+# ==================
+# Test outputs
+test-results/
+coverage/
+.jest-cache/
+
+# E2E test artifacts
+test-results/
+playwright-report/
+blob-report/
+
+# ==================
+# DATABASE & STORAGE
+# ==================
+# SQLite databases
 *.sqlite
 *.sqlite3
+*.db
 
-# Redis dump file
-dump.rdb
+# Database backups
+*.sql.bak
+database-backups/
 
-# Docker
-Dockerfile.prod
-docker-compose.prod.yml
+# File uploads
+uploads/
+public/uploads/
 
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
+# ==================
+# BLOCKCHAIN & APTOS
+# ==================
+# Aptos build outputs
+smart-contracts/build/
+.aptos/
 
-# IDE files
+# Move compiler cache
+smart-contracts/.move/
+
+# Aptos CLI generated files
+.aptos-cli/
+
+# Private keys and wallet files (CRITICAL!)
+*.private
+*.key
+*.pem
+wallet-*
+private-keys/
+
+# ==================
+# AI & ML MODELS
+# ==================
+# Downloaded ML models
+models/
+*.model
+*.pkl
+*.h5
+*.onnx
+
+# AI training data
+training-data/
+datasets/
+
+# Model cache
+.transformers_cache/
+.huggingface/
+
+# ==================
+# DEVELOPMENT TOOLS
+# ==================
+# Editor directories and files
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# Build outputs
-build/
-dist/
-*.tar.gz
+# IDE project files
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
 
-# Aptos CLI
-.aptos/
+# ==================
+# OPERATING SYSTEM
+# ==================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
 
-# Move build artifacts
-build/
+# Windows
+ehthumbs.db
+Thumbs.db
+desktop.ini
 
-# Frontend specific
-frontend/.next/
-frontend/out/
-frontend/.vercel/
-frontend/public/sw.js
-frontend/public/workbox-*.js
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
 
-# Backend specific
-backend/dist/
-backend/logs/
-backend/*.log
-
-# Smart contracts
-smart-contracts/build/
-smart-contracts/.aptos/config.yaml
-
-# Documentation build
-docs/_build/
-docs/.doctrees/
-
-# Testing
-coverage/
-.jest/
-test-results/
-playwright-report/
-
-# Temporary files
-*.tmp
-*.temp
+# ==================
+# TEMPORARY FILES
+# ==================
+# Temporary directories
+tmp/
+temp/
 .tmp/
-.temp/
 
-# Lock files (keep only one)
-package-lock.json
-yarn.lock
+# Cache directories
+.cache/
+.eslintcache
+.stylelintcache
 
-# Local environment files
-.env.local
-.env.*.local
+# Lock files for single-instance apps
+*.lock
 
-# Vercel
-.vercel
+# ==================
+# PRODUCTION & DEPLOYMENT
+# ==================
+# PM2 ecosystem files with sensitive data
+ecosystem.config.js
 
-# Sentry
-.sentryclirc
+# Docker build context (if contains sensitive files)
+.dockerignore
+
+# Kubernetes secrets
+k8s-secrets/
+*.secret.yaml
+
+# ==================
+# ANALYTICS & MONITORING
+# ==================
+# Analytics data exports
+analytics-exports/
+*.analytics
+
+# Performance monitoring
+.trace/
+*.trace
+
+# ==================
+# BACKUP & ARCHIVE
+# ==================
+# Backup files
+*.backup
+*.bak
+*.old
+*.orig
+
+# Archive files
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# ==================
+# SECURITY
+# ==================
+# Security scan results
+security-reports/
+*.security
+
+# Certificate files
+*.crt
+*.key
+*.pem
+certificates/
+
+# ==================
+# CUSTOM PROJECT FILES
+# ==================
+# Documentation drafts
+docs/drafts/
+*.draft.md
+
+# Design files
+design/
+*.fig
+*.sketch
+*.xd
+
+# Screenshots and demos
+screenshots/
+demo-videos/
+*.gif
+*.mp4
+
+# Development notes
+dev-notes/
+todo.md
+notes.txt
+
+# ==================
+# PACKAGE MANAGERS
+# ==================
+# Yarn v2+
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# PNPM
+.pnpm-debug.log*
+
+# Rush
+common/deploy/
+common/temp/
+common/autoinstallers/*/.npmrc
+
+# ==================
+# END OF GITIGNORE
+# ==================
