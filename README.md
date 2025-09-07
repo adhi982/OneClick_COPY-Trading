@@ -18,6 +18,11 @@
 [Features](#features) • [Quick Start](#quick-start) • [Architecture](#architecture) • [AI Analytics](#ai-analytics) • [API Reference](#api-reference)
 
 </div>
+---
+
+<img width="1519" height="841" alt="Screenshot 2025-09-07 130202" src="https://github.com/user-attachments/assets/88c90bb6-1b07-492a-9a95-e1732e4ec778" />
+
+<img width="1886" height="921" alt="Screenshot 2025-09-07 130314" src="https://github.com/user-attachments/assets/c4454fa6-c5df-43a3-9e68-728179b6a3a2" />
 
 ---
 
